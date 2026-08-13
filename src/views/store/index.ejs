@@ -1,0 +1,28 @@
+<section class="page-header">
+  <div class="container">
+    <span class="eyebrow">Made to Measure</span>
+    <h1>Design Your Suit</h1>
+    <p>Choose a fabric to begin. You'll customize the details and submit your measurements next.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top:24px;">
+  <div class="container">
+    <% if (fabrics && fabrics.length) { %>
+      <div class="grid grid-3">
+        <% fabrics.forEach(function(f) { %>
+          <a class="card" href="/store/fabrics/<%= f.id %>" style="color:inherit;">
+            <img src="<%= f.imageUrl %>" alt="<%= f.name %>">
+            <div class="card-body">
+              <h3 style="margin-bottom:4px;"><%= f.name %></h3>
+              <p style="color:var(--color-ink-soft); font-size:0.88rem; margin-bottom:10px;"><%= f.material %></p>
+              <strong style="color:var(--color-accent-dark);">From ETB <%= (f.priceCents / 100).toLocaleString() %></strong>
+            </div>
+          </a>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="empty-state"><p>New fabrics are on the way — check back soon.</p></div>
+    <% } %>
+  </div>
+</section>

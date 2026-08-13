@@ -1,0 +1,42 @@
+<section class="page-header">
+  <div class="container">
+    <span class="eyebrow">Almost There</span>
+    <h1>Checkout</h1>
+  </div>
+</section>
+
+<section class="section" style="padding-top:24px;">
+  <div class="container grid grid-2" style="align-items:start;">
+    <div class="form-card">
+      <% if (errors && errors.length) { %>
+        <div class="alert alert-error"><%= errors[0].msg %></div>
+      <% } %>
+      <form method="POST" action="/checkout">
+        <div class="field">
+          <label for="customerName">Full Name</label>
+          <input type="text" id="customerName" name="customerName" value="<%= values.customerName || '' %>" required>
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" value="<%= values.email || '' %>" required>
+          </div>
+          <div class="field">
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" name="phone" value="<%= values.phone || '' %>" required>
+          </div>
+        </div>
+        <p class="hint" style="margin-bottom:20px;">You'll be redirected to Chapa to complete your payment securely.</p>
+        <button class="btn btn-primary btn-block" type="submit">Continue to Payment</button>
+      </form>
+    </div>
+
+    <div class="cart-summary">
+      <h3>Order Summary</h3>
+      <% items.forEach(function(item) { %>
+        <div class="summary-row"><span><%= item.fabric.name %></span><span>ETB <%= (item.lineTotalCents/100).toLocaleString() %></span></div>
+      <% }) %>
+      <div class="summary-row total"><span>Total</span><span>ETB <%= (totalCents/100).toLocaleString() %></span></div>
+    </div>
+  </div>
+</section>

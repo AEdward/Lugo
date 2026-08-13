@@ -1,0 +1,55 @@
+<div class="admin-header">
+  <div>
+    <h1>Bookings</h1>
+    <p style="color:var(--color-ink-soft);">Approve requests before their <%= holdHours %>-hour hold expires, or reject to free the slot immediately.</p>
+  </div>
+</div>
+
+<% if (typeof flashError !== 'undefined' && flashError) { %>
+  <div class="alert alert-error"><%= flashError %></div>
+<% } %>
+
+<div class="tabs">
+  <a href="/admin/bookings?status=pending" class="<%= status === 'pending' ? 'active' : '' %>">Pending</a>
+  <a href="/admin/bookings?status=confirmed" class="<%= status === 'confirmed' ? 'active' : '' %>">Confirmed</a>
+  <a href="/admin/bookings?status=rejected" class="<%= status === 'rejected' ? 'active' : '' %>">Rejected</a>
+  <a href="/admin/bookings?status=expired" class="<%= status === 'expired' ? 'active' : '' %>">Expired</a>
+  <a href="/admin/bookings?status=cancelled" class="<%= status === 'cancelled' ? 'active' : '' %>">Cancelled</a>
+</div>
+
+<div class="panel">
+  <% if (bookings && bookings.length) { %>
+    <table class="simple">
+      <thead>
+        <tr><th>Date &amp; Time</th><th>Customer</th><th>Service</th><th>Contact</th><% if (status === 'pending') { %><th>Hold Expires</th><% } %><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        <% bookings.forEach(function(b) { %>
+          <tr>
+            <td><%= new Date(b.startsAt).toLocaleString([], {dateStyle:'medium', timeStyle:'short'}) %></td>
+            <td><%= b.customerName %></td>
+            <td style="text-transform:capitalize;"><%= b.serviceType %></td>
+            <td><%= b.email %><br><span style="color:var(--color-ink-soft);"><%= b.phone %></span></td>
+            <% if (status === 'pending') { %>
+              <td><%= b.holdExpiresAt ? new Date(b.holdExpiresAt).toLocaleString([], {dateStyle:'medium', timeStyle:'short'}) : '—' %></td>
+            <% } %>
+            <td>
+              <% if (status === 'pending') { %>
+                <div class="inline-actions">
+                  <form method="POST" action="/admin/bookings/<%= b.id %>/approve"><button class="btn btn-sm btn-primary" type="submit">Approve</button></form>
+                  <form method="POST" action="/admin/bookings/<%= b.id %>/reject"><button class="btn btn-sm btn-outline" type="submit">Reject</button></form>
+                </div>
+              <% } else if (status === 'confirmed') { %>
+                <form method="POST" action="/admin/bookings/<%= b.id %>/cancel"><button class="btn btn-sm btn-danger" type="submit">Cancel</button></form>
+              <% } else { %>
+                <span class="badge badge-<%= status %>"><%= status %></span>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p style="color:var(--color-ink-soft);">No <%= status %> bookings.</p>
+  <% } %>
+</div>

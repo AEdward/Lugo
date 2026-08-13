@@ -1,0 +1,33 @@
+<div class="admin-header">
+  <div>
+    <h1>Messages</h1>
+    <p style="color:var(--color-ink-soft);">Submissions from the public Contact form.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <% if (messages && messages.length) { %>
+    <table class="simple">
+      <thead><tr><th>From</th><th>Message</th><th>Received</th><th></th></tr></thead>
+      <tbody>
+        <% messages.forEach(function(m) { %>
+          <tr style="<%= m.isRead ? '' : 'font-weight:600;' %>">
+            <td><%= m.name %><br><span style="font-weight:400; color:var(--color-ink-soft); font-size:0.82rem;"><%= m.email %></span></td>
+            <td style="max-width:340px;"><%= m.message %></td>
+            <td><%= new Date(m.createdAt).toLocaleString([], {dateStyle:'medium', timeStyle:'short'}) %></td>
+            <td>
+              <div class="inline-actions">
+                <% if (!m.isRead) { %>
+                  <form method="POST" action="/admin/messages/<%= m.id %>/read"><button class="btn btn-sm btn-outline" type="submit">Mark Read</button></form>
+                <% } %>
+                <form method="POST" action="/admin/messages/<%= m.id %>/delete"><button class="btn btn-sm btn-danger" type="submit">Delete</button></form>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p style="color:var(--color-ink-soft);">No messages yet.</p>
+  <% } %>
+</div>

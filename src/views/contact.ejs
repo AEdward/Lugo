@@ -1,0 +1,54 @@
+<section class="page-header">
+  <div class="container">
+    <span class="eyebrow">Get in Touch</span>
+    <h1>Contact Us</h1>
+    <p>Questions about a custom order or your appointment? Send us a message and we'll respond within one business day.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top:24px;">
+  <div class="container grid grid-2" style="align-items:start;">
+    <div class="form-card">
+      <% if (success) { %>
+        <div class="alert alert-success">Thanks for reaching out — we'll be in touch shortly.</div>
+      <% } %>
+      <% if (errors && errors.length) { %>
+        <div class="alert alert-error"><%= errors[0].msg %></div>
+      <% } %>
+
+      <form method="POST" action="/contact">
+        <div class="form-grid">
+          <div class="field">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" value="<%= values.name || '' %>" required>
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" value="<%= values.email || '' %>" required>
+          </div>
+        </div>
+        <div class="field">
+          <label for="phone">Phone (optional)</label>
+          <input type="tel" id="phone" name="phone" value="<%= values.phone || '' %>">
+        </div>
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" required><%= values.message || '' %></textarea>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Send Message</button>
+      </form>
+    </div>
+
+    <div>
+      <h3>Studio Hours</h3>
+      <p style="color:var(--color-ink-soft);">Tuesday – Saturday, 10:00 AM – 6:00 PM<br>Closed Sunday &amp; Monday</p>
+      <h3>Reach Us Directly</h3>
+      <p style="color:var(--color-ink-soft);">
+        <a href="mailto:hello@lugotailoring.com">hello@lugotailoring.com</a><br>
+        <a href="tel:+251000000000">+251 00 000 0000</a>
+      </p>
+      <h3>Prefer to book directly?</h3>
+      <a class="btn btn-outline" href="/booking">Book an Appointment</a>
+    </div>
+  </div>
+</section>

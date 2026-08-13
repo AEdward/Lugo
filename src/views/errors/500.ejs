@@ -1,0 +1,8 @@
+<section class="section" style="text-align:center; padding: 140px 24px;">
+  <span class="eyebrow">Error</span>
+  <h1>Something went wrong</h1>
+  <p style="color:var(--color-ink-soft); margin-bottom:24px;">
+    <% if (typeof message !== 'undefined' && message) { %><%= message %><% } else { %>Please try again shortly.<% } %>
+  </p>
+  <a class="btn btn-primary" href="/">Back to Home</a>
+</section>

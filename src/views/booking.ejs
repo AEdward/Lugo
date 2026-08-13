@@ -1,0 +1,74 @@
+<section class="page-header">
+  <div class="container">
+    <span class="eyebrow">Book an Appointment</span>
+    <h1>Reserve Your Fitting</h1>
+    <p>Choose a date and time below. Your request is held for <%= typeof holdHours !== 'undefined' ? holdHours : 24 %> hours while our team confirms it — you'll receive a confirmation once approved.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top:24px;">
+  <div class="container">
+    <% if (submitted) { %>
+      <div class="alert alert-success">Your appointment request has been submitted! We'll confirm by email once approved.</div>
+    <% } %>
+    <% if (typeof errors !== 'undefined' && errors.length) { %>
+      <div class="alert alert-error"><%= errors[0].msg %></div>
+    <% } %>
+
+    <form id="bookingForm" method="POST" action="/booking" class="booking-layout">
+      <div>
+        <div class="form-card">
+          <div class="field">
+            <label for="bookingDate">Select a Date</label>
+            <input type="date" id="bookingDate" min="<%= todayDateStr %>" required>
+          </div>
+
+          <div class="field">
+            <label>Available Times</label>
+            <div id="slotGrid" class="slot-grid"><p class="hint">Choose a date to see available times.</p></div>
+            <div class="slot-legend">
+              <span><i class="dot dot-available"></i> Available</span>
+              <span><i class="dot dot-pending"></i> Awaiting approval</span>
+              <span><i class="dot dot-booked"></i> Booked</span>
+            </div>
+          </div>
+          <input type="hidden" name="startsAt" id="startsAtInput" value="<%= typeof values !== 'undefined' && values.startsAt ? values.startsAt : '' %>" required>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="field">
+          <label for="serviceType">Service</label>
+          <select id="serviceType" name="serviceType" required>
+            <option value="consultation">Consultation</option>
+            <option value="measurement">Measurement Session</option>
+            <option value="fitting">Fitting</option>
+            <option value="alteration">Alteration</option>
+            <option value="delivery">Delivery / Pickup</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="customerName">Full Name</label>
+          <input type="text" id="customerName" name="customerName" required value="<%= typeof values !== 'undefined' ? (values.customerName || '') : '' %>">
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required value="<%= typeof values !== 'undefined' ? (values.email || '') : '' %>">
+          </div>
+          <div class="field">
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" name="phone" required value="<%= typeof values !== 'undefined' ? (values.phone || '') : '' %>">
+          </div>
+        </div>
+        <div class="field">
+          <label for="notes">Notes (optional)</label>
+          <textarea id="notes" name="notes"><%= typeof values !== 'undefined' ? (values.notes || '') : '' %></textarea>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Request Appointment</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<script src="/js/booking.js"></script>

@@ -1,0 +1,36 @@
+<section class="section" style="text-align:center; padding-top:100px;">
+  <div class="container">
+    <% if (paid) { %>
+      <span class="eyebrow" style="color:var(--color-success);">Payment Confirmed</span>
+      <h1>Thank you for your order</h1>
+      <p style="color:var(--color-ink-soft); max-width:520px; margin:0 auto 32px;">
+        We've received your payment and your custom order details. Our tailors will be in touch to confirm next steps.
+      </p>
+    <% } else { %>
+      <span class="eyebrow" style="color:var(--color-warning);">Payment Pending</span>
+      <h1>We're confirming your payment</h1>
+      <p style="color:var(--color-ink-soft); max-width:520px; margin:0 auto 32px;">
+        If you completed checkout with Chapa, this can take a moment. We'll email you once it's confirmed — no need to submit again.
+      </p>
+    <% } %>
+
+    <% if (orders && orders.length) { %>
+      <div style="max-width:640px;margin:0 auto;text-align:left;">
+        <table class="simple">
+          <thead><tr><th>Order #</th><th>Status</th><th>Total</th></tr></thead>
+          <tbody>
+            <% orders.forEach(function(o) { %>
+              <tr>
+                <td><%= o.orderNumber %></td>
+                <td><span class="badge badge-<%= o.paymentStatus %>"><%= o.paymentStatus %></span></td>
+                <td>ETB <%= (o.totalCents/100).toLocaleString() %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+
+    <a class="btn btn-outline" href="/" style="margin-top:32px;">Back to Home</a>
+  </div>
+</section>

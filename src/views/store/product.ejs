@@ -1,0 +1,56 @@
+<section class="section" style="padding-top:56px;">
+  <div class="container">
+    <div class="grid grid-2" style="align-items:start; margin-bottom:40px;">
+      <img src="<%= fabric.imageUrl %>" alt="<%= fabric.name %>" style="border-radius:6px;">
+      <div>
+        <span class="eyebrow"><%= fabric.material %></span>
+        <h1><%= fabric.name %></h1>
+        <p style="color:var(--color-ink-soft);"><%= fabric.description %></p>
+        <strong style="font-size:1.3rem; color:var(--color-accent-dark);">From ETB <%= (fabric.priceCents / 100).toLocaleString() %></strong>
+      </div>
+    </div>
+
+    <% if (errors && errors.length) { %>
+      <div class="alert alert-error">
+        <% errors.slice(0,3).forEach(function(e) { %><div><%= e.msg %></div><% }) %>
+      </div>
+    <% } %>
+
+    <form method="POST" action="/store/fabrics/<%= fabric.id %>/add-to-cart">
+      <div class="grid grid-2" style="align-items:start;">
+        <div>
+          <h3>Design Details</h3>
+          <% Object.keys(optionGroups).forEach(function(category) { %>
+            <div class="field">
+              <label style="text-transform:capitalize;"><%= category %></label>
+              <% optionGroups[category].forEach(function(opt, idx) { %>
+                <label class="option-pill">
+                  <input type="radio" name="optionIds[<%= category %>]" value="<%= opt.id %>" <%= idx === 0 ? 'checked' : '' %>>
+                  <%= opt.name %>
+                  <span class="price"><%= opt.priceCents > 0 ? ('+ETB ' + (opt.priceCents/100).toLocaleString()) : 'Included' %></span>
+                </label>
+              <% }) %>
+            </div>
+          <% }) %>
+        </div>
+
+        <div>
+          <h3>Your Measurements <span style="font-weight:400;font-size:0.8rem;color:var(--color-ink-soft);">(cm / kg)</span></h3>
+          <div class="form-grid">
+            <% measurementFields.forEach(function(f) { %>
+              <div class="field">
+                <label for="m_<%= f %>"><%= f.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()) %></label>
+                <input type="number" step="0.1" min="1" id="m_<%= f %>" name="measurements[<%= f %>]" value="<%= values.measurements ? values.measurements[f] || '' : '' %>" required>
+              </div>
+            <% }) %>
+          </div>
+          <div class="field">
+            <label for="notes">Notes for our tailors (optional)</label>
+            <textarea id="notes" name="notes"><%= values.notes || '' %></textarea>
+          </div>
+          <button class="btn btn-primary btn-block" type="submit">Add to Cart</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>

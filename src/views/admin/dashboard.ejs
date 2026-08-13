@@ -1,0 +1,42 @@
+<div class="admin-header">
+  <div>
+    <h1>Dashboard</h1>
+    <p style="color:var(--color-ink-soft);">Welcome back, <%= currentAdmin.name %>.</p>
+  </div>
+</div>
+
+<div class="stat-grid">
+  <a class="stat-card" href="/admin/bookings?status=pending" style="color:inherit;">
+    <div class="num"><%= pendingBookings %></div>
+    <div class="label">Bookings awaiting approval</div>
+  </a>
+  <a class="stat-card" href="/admin/orders" style="color:inherit;">
+    <div class="num"><%= pendingOrders %></div>
+    <div class="label">Paid orders to process</div>
+  </a>
+  <a class="stat-card" href="/admin/messages" style="color:inherit;">
+    <div class="num"><%= unreadMessages %></div>
+    <div class="label">Unread messages</div>
+  </a>
+</div>
+
+<div class="panel">
+  <h3 style="margin-bottom:16px;">Upcoming Confirmed Appointments</h3>
+  <% if (upcoming && upcoming.length) { %>
+    <table class="simple">
+      <thead><tr><th>Date</th><th>Time</th><th>Customer</th><th>Service</th></tr></thead>
+      <tbody>
+        <% upcoming.forEach(function(b) { %>
+          <tr>
+            <td><%= new Date(b.startsAt).toLocaleDateString() %></td>
+            <td><%= new Date(b.startsAt).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) %></td>
+            <td><%= b.customerName %></td>
+            <td style="text-transform:capitalize;"><%= b.serviceType %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p style="color:var(--color-ink-soft);">No upcoming confirmed appointments yet.</p>
+  <% } %>
+</div>

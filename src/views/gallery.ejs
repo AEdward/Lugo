@@ -1,0 +1,24 @@
+<section class="page-header">
+  <div class="container">
+    <span class="eyebrow">Portfolio</span>
+    <h1>Gallery</h1>
+    <p>A selection of recent commissions from the Lugo Tailoring studio.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top:24px;">
+  <div class="container">
+    <% if (images && images.length) { %>
+      <div class="gallery-grid">
+        <% images.forEach(function(img) { %>
+          <div class="gallery-item">
+            <img src="<%= img.imageUrl %>" alt="<%= img.title || 'Lugo Tailoring' %>">
+            <div class="gallery-caption"><%= img.title %><% if (img.category) { %> &middot; <%= img.category %><% } %></div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="empty-state"><p>Our gallery is being updated — check back soon.</p></div>
+    <% } %>
+  </div>
+</section>
