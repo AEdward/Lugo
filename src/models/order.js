@@ -6,10 +6,50 @@ module.exports = (sequelize, DataTypes) => {
     email: { type: DataTypes.STRING, allowNull: false, validate: { isEmail: true } },
     phone: { type: DataTypes.STRING, allowNull: false },
     fabricId: { type: DataTypes.INTEGER, allowNull: false },
-    // Snapshot of chosen design options: [{ id, category, name, priceCents }]
-    selectedOptions: { type: DataTypes.JSON, allowNull: false, defaultValue: [] },
+    // Snapshot of chosen design options: [{ id, category, name, priceCents, imageUrl }]
+    //
+    // MariaDB (e.g. XAMPP's bundled MySQL) implements JSON columns as plain
+    // LONGTEXT, so the driver-level auto-parsing that real MySQL's native
+    // JSON type gets doesn't happen there — the raw JSON string comes back
+    // instead of a parsed array. These getters normalize either case so
+    // callers always get real arrays/objects regardless of database engine.
+    selectedOptions: {
+      type: DataTypes.JSON,
+      allowNull: false,
+      defaultValue: [],
+      get() {
+        const raw = this.getDataValue('selectedOptions');
+        if (Array.isArray(raw)) return raw;
+        if (typeof raw === 'string') {
+          try {
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+          } catch {
+            return [];
+          }
+        }
+        return [];
+      },
+    },
     // { chest, waist, hips, shoulder, sleeveLength, neck, inseam, height, weight, notes } — cm
-    measurements: { type: DataTypes.JSON, allowNull: false, defaultValue: {} },
+    measurements: {
+      type: DataTypes.JSON,
+      allowNull: false,
+      defaultValue: {},
+      get() {
+        const raw = this.getDataValue('measurements');
+        if (raw && typeof raw === 'object') return raw;
+        if (typeof raw === 'string') {
+          try {
+            const parsed = JSON.parse(raw);
+            return parsed && typeof parsed === 'object' ? parsed : {};
+          } catch {
+            return {};
+          }
+        }
+        return {};
+      },
+    },
     notes: { type: DataTypes.TEXT, allowNull: true },
     subtotalCents: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     totalCents: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
