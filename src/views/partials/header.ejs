@@ -9,9 +9,10 @@
 
     <ul class="nav-links" id="navLinks">
       <li><a href="/" class="<%= currentPath === '/' ? 'active' : '' %>">Home</a></li>
-      <li><a href="/about" class="<%= currentPath === '/about' ? 'active' : '' %>">About</a></li>
+      <li><a href="/bespoke" class="<%= currentPath === '/bespoke' ? 'active' : '' %>">Bespoke</a></li>
+      <li><a href="/store" class="<%= currentPath && currentPath.startsWith('/store') ? 'active' : '' %>">Made-to-Measure</a></li>
       <li><a href="/gallery" class="<%= currentPath === '/gallery' ? 'active' : '' %>">Gallery</a></li>
-      <li><a href="/store" class="<%= currentPath && currentPath.startsWith('/store') ? 'active' : '' %>">Store</a></li>
+      <li><a href="/about" class="<%= currentPath === '/about' ? 'active' : '' %>">About</a></li>
       <li><a href="/booking" class="<%= currentPath === '/booking' ? 'active' : '' %>">Booking</a></li>
       <li><a href="/contact" class="<%= currentPath === '/contact' ? 'active' : '' %>">Contact</a></li>
       <li class="nav-cart">

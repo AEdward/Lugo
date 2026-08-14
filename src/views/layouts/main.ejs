@@ -16,6 +16,9 @@
   </main>
 
   <%- include('../partials/footer') %>
+  <% if (currentPath !== '/booking') { %>
+    <%- include('../partials/sticky-cta') %>
+  <% } %>
 
   <script src="/js/main.js"></script>
 </body>

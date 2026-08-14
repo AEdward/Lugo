@@ -17,6 +17,10 @@ router.get('/about', (req, res) => {
   res.render('about', { title: 'About — Lugo Tailoring' });
 });
 
+router.get('/bespoke', (req, res) => {
+  res.render('bespoke', { title: 'Bespoke Tailoring — Lugo Tailoring' });
+});
+
 router.get('/gallery', async (req, res, next) => {
   try {
     const images = await GalleryImage.findAll({ order: [['sortOrder', 'ASC']] });
