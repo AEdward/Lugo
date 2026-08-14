@@ -187,7 +187,7 @@ router.post(
         callbackUrl: `${process.env.BASE_URL}/order/webhook`,
         returnUrl: `${process.env.BASE_URL}/order/return?tx_ref=${encodeURIComponent(txRef)}`,
         title: 'Lugo Suit',
-        description: `Custom suit order (${createdOrders.length} item(s))`,
+        description: `Custom suit order - ${createdOrders.length} item${createdOrders.length === 1 ? '' : 's'}`,
       });
 
       if (chapaResponse.status !== 'success' || !chapaResponse.data?.checkout_url) {
