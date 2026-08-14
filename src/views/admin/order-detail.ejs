@@ -12,10 +12,26 @@
     <p><%= order.customerName %><br><%= order.email %><br><%= order.phone %></p>
 
     <h3>Fabric &amp; Options</h3>
-    <p><%= order.Fabric ? order.Fabric.name : '—' %></p>
-    <ul>
+    <div class="build-summary-fabric" style="margin-bottom:12px;">
+      <% if (order.Fabric) { %><img src="<%= order.Fabric.imageUrl %>" alt="<%= order.Fabric.name %>"><% } %>
+      <div><strong><%= order.Fabric ? order.Fabric.name : '—' %></strong></div>
+    </div>
+    <ul class="build-summary-options">
       <% (order.selectedOptions || []).forEach(function(o) { %>
-        <li><%= o.category %>: <%= o.name %> <% if (o.priceCents) { %>(+ETB <%= (o.priceCents/100).toLocaleString() %>)<% } %></li>
+        <li class="build-summary-option">
+          <span class="build-summary-thumb">
+            <% if (o.imageUrl) { %>
+              <img src="<%= o.imageUrl %>" alt="<%= o.name %>">
+            <% } else { %>
+              <span class="option-card-thumb-placeholder"><%= o.name.charAt(0) %></span>
+            <% } %>
+          </span>
+          <span class="build-summary-option-info">
+            <span class="build-summary-option-category"><%= o.category %></span>
+            <span class="build-summary-option-name"><%= o.name %></span>
+          </span>
+          <span class="build-summary-option-price"><%= o.priceCents ? ('+ETB ' + (o.priceCents/100).toLocaleString()) : 'Included' %></span>
+        </li>
       <% }) %>
     </ul>
 

@@ -16,18 +16,32 @@
 
     <% if (orders && orders.length) { %>
       <div style="max-width:640px;margin:0 auto;text-align:left;">
-        <table class="simple">
-          <thead><tr><th>Order #</th><th>Status</th><th>Total</th></tr></thead>
-          <tbody>
-            <% orders.forEach(function(o) { %>
-              <tr>
-                <td><%= o.orderNumber %></td>
-                <td><span class="badge badge-<%= o.paymentStatus %>"><%= o.paymentStatus %></span></td>
-                <td>ETB <%= (o.totalCents/100).toLocaleString() %></td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
+        <% orders.forEach(function(o) { %>
+          <div class="panel" style="margin-bottom:16px;">
+            <div class="build-summary-fabric" style="margin-bottom:12px;">
+              <img src="<%= o.Fabric ? o.Fabric.imageUrl : '' %>" alt="<%= o.Fabric ? o.Fabric.name : '' %>">
+              <div>
+                <strong><%= o.Fabric ? o.Fabric.name : 'Custom Suit' %></strong>
+                <span><%= o.orderNumber %></span>
+              </div>
+            </div>
+            <div class="cart-item-options" style="margin-bottom:14px;">
+              <% (o.selectedOptions || []).forEach(function(opt) { %>
+                <span class="cart-item-option" title="<%= opt.name %>">
+                  <% if (opt.imageUrl) { %>
+                    <img src="<%= opt.imageUrl %>" alt="<%= opt.name %>">
+                  <% } else { %>
+                    <span class="option-card-thumb-placeholder"><%= opt.name.charAt(0) %></span>
+                  <% } %>
+                </span>
+              <% }) %>
+            </div>
+            <div class="summary-row" style="margin-bottom:0;">
+              <span><span class="badge badge-<%= o.paymentStatus %>"><%= o.paymentStatus %></span></span>
+              <span><strong>ETB <%= (o.totalCents/100).toLocaleString() %></strong></span>
+            </div>
+          </div>
+        <% }) %>
       </div>
     <% } %>
 

@@ -14,11 +14,19 @@
             <div class="cart-item">
               <img src="<%= item.fabric.imageUrl %>" alt="<%= item.fabric.name %>">
               <div>
-                <h3 style="margin-bottom:4px;"><%= item.fabric.name %></h3>
-                <p style="font-size:0.85rem; color:var(--color-ink-soft); margin-bottom:6px;">
-                  <% item.selectedOptions.forEach(function(o, i) { %><%= o.name %><%= i < item.selectedOptions.length - 1 ? ', ' : '' %><% }) %>
-                </p>
-                <p style="font-size:0.8rem; color:var(--color-ink-soft);">
+                <h3 style="margin-bottom:8px;"><%= item.fabric.name %></h3>
+                <div class="cart-item-options">
+                  <% item.selectedOptions.forEach(function(o) { %>
+                    <span class="cart-item-option" title="<%= o.name %>">
+                      <% if (o.imageUrl) { %>
+                        <img src="<%= o.imageUrl %>" alt="<%= o.name %>">
+                      <% } else { %>
+                        <span class="option-card-thumb-placeholder"><%= o.name.charAt(0) %></span>
+                      <% } %>
+                    </span>
+                  <% }) %>
+                </div>
+                <p style="font-size:0.8rem; color:var(--color-ink-soft); margin-top:8px;">
                   Chest <%= item.measurements.chest %> · Waist <%= item.measurements.waist %> · Height <%= item.measurements.height %>
                 </p>
               </div>

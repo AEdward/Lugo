@@ -1,4 +1,4 @@
-<section class="section" style="padding-top:56px;">
+<section class="section" style="padding-top:56px; padding-bottom:24px;">
   <div class="container">
     <div class="grid grid-2" style="align-items:start; margin-bottom:40px;">
       <img src="<%= fabric.imageUrl %>" alt="<%= fabric.name %>" style="border-radius:6px;">
@@ -16,26 +16,43 @@
       </div>
     <% } %>
 
-    <form method="POST" action="/store/fabrics/<%= fabric.id %>/add-to-cart">
-      <div class="grid grid-2" style="align-items:start;">
+    <form method="POST" action="/store/fabrics/<%= fabric.id %>/add-to-cart" id="configureForm">
+      <div class="configurator-layout">
         <div>
           <h3>Design Details</h3>
+          <p class="hint" style="margin-bottom:20px;">Tap an image to choose — no need to know the technical names.</p>
+
           <% Object.keys(optionGroups).forEach(function(category) { %>
-            <div class="field">
-              <label style="text-transform:capitalize;"><%= category %></label>
-              <% optionGroups[category].forEach(function(opt, idx) { %>
-                <label class="option-pill">
-                  <input type="radio" name="optionIds[<%= category %>]" value="<%= opt.id %>" <%= idx === 0 ? 'checked' : '' %>>
-                  <%= opt.name %>
-                  <span class="price"><%= opt.priceCents > 0 ? ('+ETB ' + (opt.priceCents/100).toLocaleString()) : 'Included' %></span>
-                </label>
-              <% }) %>
+            <div class="option-category">
+              <label class="option-category-label"><%= category %></label>
+              <div class="option-grid">
+                <% optionGroups[category].forEach(function(opt, idx) { %>
+                  <label class="option-card">
+                    <input
+                      type="radio"
+                      name="optionIds[<%= category %>]"
+                      value="<%= opt.id %>"
+                      data-category="<%= category %>"
+                      data-name="<%= opt.name %>"
+                      data-price="<%= opt.priceCents %>"
+                      data-image="<%= opt.imageUrl || '' %>"
+                      <%= idx === 0 ? 'checked' : '' %>>
+                    <span class="option-card-thumb">
+                      <% if (opt.imageUrl) { %>
+                        <img src="<%= opt.imageUrl %>" alt="<%= opt.name %>">
+                      <% } else { %>
+                        <span class="option-card-thumb-placeholder"><%= opt.name.charAt(0) %></span>
+                      <% } %>
+                    </span>
+                    <span class="option-card-name"><%= opt.name %></span>
+                    <span class="option-card-price"><%= opt.priceCents > 0 ? ('+ETB ' + (opt.priceCents/100).toLocaleString()) : 'Included' %></span>
+                  </label>
+                <% }) %>
+              </div>
             </div>
           <% }) %>
-        </div>
 
-        <div>
-          <h3>Your Measurements <span style="font-weight:400;font-size:0.8rem;color:var(--color-ink-soft);">(cm / kg)</span></h3>
+          <h3 style="margin-top:40px;">Your Measurements <span style="font-weight:400;font-size:0.8rem;color:var(--color-ink-soft);">(cm / kg)</span></h3>
           <div class="form-grid">
             <% measurementFields.forEach(function(f) { %>
               <div class="field">
@@ -48,9 +65,30 @@
             <label for="notes">Notes for our tailors (optional)</label>
             <textarea id="notes" name="notes"><%= values.notes || '' %></textarea>
           </div>
-          <button class="btn btn-primary btn-block" type="submit">Add to Cart</button>
         </div>
+
+        <aside class="build-summary" id="buildSummary">
+          <h3>Your Suit</h3>
+          <div class="build-summary-fabric">
+            <img src="<%= fabric.imageUrl %>" alt="<%= fabric.name %>">
+            <div>
+              <strong><%= fabric.name %></strong>
+              <span><%= fabric.material %></span>
+            </div>
+          </div>
+          <ul class="build-summary-options" id="buildSummaryOptions"></ul>
+          <div class="summary-row total">
+            <span>Total</span>
+            <span id="buildSummaryTotal">ETB <%= (fabric.priceCents/100).toLocaleString() %></span>
+          </div>
+          <button class="btn btn-primary btn-block" type="submit">Add to Cart</button>
+        </aside>
       </div>
     </form>
   </div>
 </section>
+
+<script>
+  window.__fabricPriceCents = <%- fabric.priceCents %>;
+</script>
+<script src="/js/configurator.js"></script>

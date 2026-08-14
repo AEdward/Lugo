@@ -34,7 +34,24 @@
     <div class="cart-summary">
       <h3>Order Summary</h3>
       <% items.forEach(function(item) { %>
-        <div class="summary-row"><span><%= item.fabric.name %></span><span>ETB <%= (item.lineTotalCents/100).toLocaleString() %></span></div>
+        <div class="build-summary-fabric" style="margin-bottom:10px;">
+          <img src="<%= item.fabric.imageUrl %>" alt="<%= item.fabric.name %>">
+          <div>
+            <strong><%= item.fabric.name %></strong>
+            <span>ETB <%= (item.lineTotalCents/100).toLocaleString() %></span>
+          </div>
+        </div>
+        <div class="cart-item-options" style="margin-bottom:16px;">
+          <% item.selectedOptions.forEach(function(o) { %>
+            <span class="cart-item-option" title="<%= o.name %>">
+              <% if (o.imageUrl) { %>
+                <img src="<%= o.imageUrl %>" alt="<%= o.name %>">
+              <% } else { %>
+                <span class="option-card-thumb-placeholder"><%= o.name.charAt(0) %></span>
+              <% } %>
+            </span>
+          <% }) %>
+        </div>
       <% }) %>
       <div class="summary-row total"><span>Total</span><span>ETB <%= (totalCents/100).toLocaleString() %></span></div>
     </div>

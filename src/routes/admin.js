@@ -268,7 +268,7 @@ router.get('/admin/design-options', async (req, res, next) => {
   }
 });
 
-router.post('/admin/design-options', async (req, res, next) => {
+router.post('/admin/design-options', upload.single('image'), async (req, res, next) => {
   try {
     const count = await DesignOption.count({ where: { category: req.body.category } });
     await DesignOption.create({
@@ -276,6 +276,7 @@ router.post('/admin/design-options', async (req, res, next) => {
       name: req.body.name,
       description: req.body.description || null,
       priceCents: Math.round(parseFloat(req.body.price || '0') * 100),
+      imageUrl: req.file ? `/uploads/${req.file.filename}` : null,
       sortOrder: count + 1,
     });
     res.redirect('/admin/design-options');

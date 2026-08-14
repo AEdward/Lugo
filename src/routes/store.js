@@ -237,7 +237,7 @@ router.get('/order/return', async (req, res, next) => {
 });
 
 async function settleOrdersForTxRef(txRef) {
-  const orders = await Order.findAll({ where: { chapaTxRef: txRef } });
+  const orders = await Order.findAll({ where: { chapaTxRef: txRef }, include: [Fabric] });
   if (orders.length === 0) return [];
   if (orders[0].paymentStatus === 'paid') return orders;
 
@@ -249,7 +249,7 @@ async function settleOrdersForTxRef(txRef) {
       { paymentStatus: 'paid', status: 'paid' },
       { where: { chapaTxRef: txRef } }
     );
-    return Order.findAll({ where: { chapaTxRef: txRef } });
+    return Order.findAll({ where: { chapaTxRef: txRef }, include: [Fabric] });
   }
 
   return orders;

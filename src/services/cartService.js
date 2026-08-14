@@ -52,7 +52,7 @@ async function buildCartDetails(cartItems) {
     const selectedOptions = (raw.optionIds || [])
       .map((id) => optionMap.get(id))
       .filter(Boolean)
-      .map((o) => ({ id: o.id, category: o.category, name: o.name, priceCents: o.priceCents }));
+      .map((o) => ({ id: o.id, category: o.category, name: o.name, priceCents: o.priceCents, imageUrl: o.imageUrl }));
 
     const optionsTotal = selectedOptions.reduce((sum, o) => sum + o.priceCents, 0);
     const lineTotal = fabric.priceCents + optionsTotal;
