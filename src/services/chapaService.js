@@ -16,7 +16,12 @@ client.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      const chapaMessage = error.response.data?.message || JSON.stringify(error.response.data);
+      // Chapa's "message" field is a plain string for most errors (e.g. bad
+      // auth), but for validation failures it's an object keyed by field
+      // name (e.g. { email: ["email is required"] }) — stringify either way.
+      const rawMessage = error.response.data?.message;
+      const chapaMessage =
+        typeof rawMessage === 'string' ? rawMessage : JSON.stringify(rawMessage ?? error.response.data);
       const wrapped = new Error(`Chapa API error (${error.response.status}): ${chapaMessage}`);
       wrapped.status = error.response.status;
       wrapped.chapaResponse = error.response.data;
