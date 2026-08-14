@@ -51,7 +51,7 @@
   form.addEventListener('change', (e) => {
     if (e.target.matches('input[type="radio"][data-category]')) {
       const card = e.target.closest('.option-card');
-      const group = card ? card.closest('.option-grid') : null;
+      const group = card ? card.closest('.option-scroll') : null;
       if (group) {
         group.querySelectorAll('.option-card').forEach((c) => c.classList.remove('selected'));
         if (card) card.classList.add('selected');
@@ -63,6 +63,15 @@
   form.querySelectorAll('.option-card input:checked').forEach((radio) => {
     const card = radio.closest('.option-card');
     if (card) card.classList.add('selected');
+  });
+
+  form.querySelectorAll('.option-scroll-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const rail = btn.closest('.option-category').querySelector('.option-scroll');
+      if (!rail) return;
+      const dir = parseInt(btn.dataset.scrollDir, 10) || 1;
+      rail.scrollBy({ left: dir * 300, behavior: 'smooth' });
+    });
   });
 
   render();

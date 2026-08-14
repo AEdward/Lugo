@@ -24,8 +24,16 @@
 
           <% Object.keys(optionGroups).forEach(function(category) { %>
             <div class="option-category">
-              <label class="option-category-label"><%= category %></label>
-              <div class="option-grid">
+              <div class="option-category-header">
+                <label class="option-category-label"><%= category %> <span class="option-category-count">(<%= optionGroups[category].length %>)</span></label>
+                <% if (optionGroups[category].length > 4) { %>
+                  <div class="option-scroll-nav">
+                    <button type="button" class="option-scroll-btn" data-scroll-dir="-1" aria-label="Scroll <%= category %> left">&#8249;</button>
+                    <button type="button" class="option-scroll-btn" data-scroll-dir="1" aria-label="Scroll <%= category %> right">&#8250;</button>
+                  </div>
+                <% } %>
+              </div>
+              <div class="option-scroll">
                 <% optionGroups[category].forEach(function(opt, idx) { %>
                   <label class="option-card">
                     <input
