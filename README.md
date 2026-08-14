@@ -87,5 +87,6 @@ src/
 
 ## Notes
 
-- The logo (`src/public/images/logo.svg`) is a scalable recreation of the supplied Lugo Tailoring mark. Swap in the official brand file whenever it's ready — everywhere else references `/images/logo.svg`.
-- Fabric swatches and gallery photos currently use generated placeholder SVGs so the site isn't full of broken images — replace them with real photography via the admin dashboard (Gallery/Fabrics pages) or by swapping files in `src/public/images/`.
+- Image uploads (gallery photos, fabric swatches, via the admin dashboard) accept **JPG and PNG only**. All static brand/placeholder imagery ships as PNG for the same reason — there's no SVG anywhere in the app.
+- The logo (`src/public/images/logo.png`, full lockup at `logo-full.png`) is a recreation of the supplied Lugo Tailoring mark. Swap in the official brand files whenever ready — keep the same filenames/extension (`logo.png`, `logo-full.png`) and no code changes are needed. Everywhere else references those exact paths.
+- Fabric swatches and gallery photos currently use generated placeholder PNGs so the site isn't full of broken images — replace them with real photography via the admin dashboard (Gallery/Fabrics pages) or by swapping files in `src/public/images/`.

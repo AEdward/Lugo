@@ -12,12 +12,12 @@ const storage = multer.diskStorage({
   },
 });
 
-const ALLOWED = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
+const ALLOWED = new Set(['.jpg', '.jpeg', '.png']);
 
 function fileFilter(req, file, cb) {
   const ext = path.extname(file.originalname).toLowerCase();
   if (!ALLOWED.has(ext)) {
-    return cb(new Error('Unsupported image type. Use JPG, PNG, WEBP, or SVG.'));
+    return cb(new Error('Unsupported image type. Use JPG or PNG.'));
   }
   cb(null, true);
 }
