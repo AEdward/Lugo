@@ -10,11 +10,37 @@ const client = axios.create({
   timeout: 15000,
 });
 
+// Surface Chapa's actual error message (e.g. "Invalid authorization credentials")
+// instead of axios's generic "Request failed with status code 401".
+client.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      const chapaMessage = error.response.data?.message || JSON.stringify(error.response.data);
+      const wrapped = new Error(`Chapa API error (${error.response.status}): ${chapaMessage}`);
+      wrapped.status = error.response.status;
+      wrapped.chapaResponse = error.response.data;
+      return Promise.reject(wrapped);
+    }
+    return Promise.reject(error);
+  }
+);
+
+function assertConfigured() {
+  if (!chapaConfig.secretKey) {
+    throw new Error(
+      'CHAPA_SECRET_KEY is not set. Add it to your .env file and restart the server before accepting payments.'
+    );
+  }
+}
+
 /**
  * Initialize a Chapa checkout transaction.
  * https://developer.chapa.co/docs/accept-payments
  */
 async function initializeTransaction({ txRef, amount, currency, email, firstName, lastName, callbackUrl, returnUrl, title, description }) {
+  assertConfigured();
+
   const response = await client.post('/transaction/initialize', {
     tx_ref: txRef,
     amount: String(amount),
@@ -37,6 +63,8 @@ async function initializeTransaction({ txRef, amount, currency, email, firstName
  * Verify a transaction after payment (called from webhook or return page).
  */
 async function verifyTransaction(txRef) {
+  assertConfigured();
+
   const response = await client.get(`/transaction/verify/${encodeURIComponent(txRef)}`);
   return response.data;
 }
