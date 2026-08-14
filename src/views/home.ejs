@@ -1,5 +1,9 @@
 <section class="hero">
-  <img class="hero-bg" src="/images/hero.png" alt="">
+  <% if (typeof heroVideoUrl !== 'undefined' && heroVideoUrl) { %>
+    <video class="hero-bg" src="<%= heroVideoUrl %>" autoplay muted loop playsinline poster="/images/hero.png"></video>
+  <% } else { %>
+    <img class="hero-bg" src="/images/hero.png" alt="">
+  <% } %>
   <div class="hero-overlay">
     <span class="eyebrow" style="color:#e0b9b0;">Bespoke &middot; Handcrafted &middot; Made to Measure</span>
     <h1>Luxury tailoring, cut precisely to you.</h1>

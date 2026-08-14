@@ -1,13 +1,17 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { GalleryImage, ContactMessage } = require('../models');
+const settingsService = require('../services/settingsService');
 
 const router = express.Router();
 
 router.get('/', async (req, res, next) => {
   try {
-    const featured = await GalleryImage.findAll({ order: [['sortOrder', 'ASC']], limit: 6 });
-    res.render('home', { title: 'Lugo Tailoring — Bespoke Luxury Suits', featured });
+    const [featured, heroVideoUrl] = await Promise.all([
+      GalleryImage.findAll({ order: [['sortOrder', 'ASC']], limit: 6 }),
+      settingsService.get('heroVideoUrl'),
+    ]);
+    res.render('home', { title: 'Lugo Tailoring — Bespoke Luxury Suits', featured, heroVideoUrl });
   } catch (err) {
     next(err);
   }

@@ -1,0 +1,36 @@
+<div class="admin-header">
+  <div>
+    <h1>Settings</h1>
+    <p style="color:var(--color-ink-soft);">Site-wide media and configuration.</p>
+  </div>
+</div>
+
+<% if (error) { %>
+  <div class="alert alert-error"><%= error %></div>
+<% } %>
+
+<div class="panel">
+  <h3 style="margin-bottom:6px;">Homepage Hero Video</h3>
+  <p style="color:var(--color-ink-soft); font-size:0.88rem; margin-bottom:20px;">
+    Replaces the illustrated hero background on the homepage with a looping video. MP4 or WebM, up to 50MB —
+    keep it short (10&ndash;20 seconds) and without sound, since it autoplays muted. If no video is uploaded,
+    the homepage falls back to the default image.
+  </p>
+
+  <% if (heroVideoUrl) { %>
+    <video src="<%= heroVideoUrl %>" style="width:100%; max-width:480px; border-radius:6px; margin-bottom:16px; display:block;" muted loop autoplay playsinline></video>
+    <form method="POST" action="/admin/settings/hero-video/remove" style="margin-bottom:24px;">
+      <button class="btn btn-sm btn-danger" type="submit">Remove Video (use default image)</button>
+    </form>
+  <% } else { %>
+    <p style="margin-bottom:16px; color:var(--color-ink-soft);">No hero video uploaded — the homepage is currently using the default image.</p>
+  <% } %>
+
+  <form method="POST" action="/admin/settings/hero-video" enctype="multipart/form-data">
+    <div class="field">
+      <label for="video">Upload <%= heroVideoUrl ? 'Replacement' : '' %> Video</label>
+      <input type="file" id="video" name="video" accept="video/mp4,video/webm" required>
+    </div>
+    <button class="btn btn-primary" type="submit">Upload</button>
+  </form>
+</div>

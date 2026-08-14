@@ -5,7 +5,9 @@ const { Op } = require('sequelize');
 const { Booking, Order, Fabric, DesignOption, GalleryImage, ContactMessage } = require('../models');
 const { requireAdmin } = require('../middleware/auth');
 const upload = require('../middleware/upload');
+const videoUpload = require('../middleware/videoUpload');
 const bookingConfig = require('../config/booking');
+const settingsService = require('../services/settingsService');
 
 const router = express.Router();
 
@@ -318,6 +320,64 @@ router.post('/admin/messages/:id/delete', async (req, res, next) => {
   try {
     await ContactMessage.destroy({ where: { id: req.params.id } });
     res.redirect('/admin/messages');
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------- Site settings ----------
+
+router.get('/admin/settings', async (req, res, next) => {
+  try {
+    const heroVideoUrl = await settingsService.get('heroVideoUrl');
+    res.render('admin/settings', {
+      title: 'Settings — Admin',
+      layout: 'layouts/admin',
+      heroVideoUrl,
+      error: null,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/admin/settings/hero-video', (req, res, next) => {
+  videoUpload.single('video')(req, res, async (err) => {
+    if (err) {
+      const heroVideoUrl = await settingsService.get('heroVideoUrl');
+      return res.status(400).render('admin/settings', {
+        title: 'Settings — Admin',
+        layout: 'layouts/admin',
+        heroVideoUrl,
+        error: err.message,
+      });
+    }
+
+    try {
+      if (!req.file) return res.redirect('/admin/settings');
+
+      const previousUrl = await settingsService.get('heroVideoUrl');
+      await settingsService.set('heroVideoUrl', `/uploads/${req.file.filename}`);
+
+      if (previousUrl && previousUrl.startsWith('/uploads/')) {
+        fs.unlink(path.join(__dirname, '..', 'public', previousUrl), () => {});
+      }
+
+      res.redirect('/admin/settings');
+    } catch (err2) {
+      next(err2);
+    }
+  });
+});
+
+router.post('/admin/settings/hero-video/remove', async (req, res, next) => {
+  try {
+    const previousUrl = await settingsService.get('heroVideoUrl');
+    if (previousUrl && previousUrl.startsWith('/uploads/')) {
+      fs.unlink(path.join(__dirname, '..', 'public', previousUrl), () => {});
+    }
+    await settingsService.unset('heroVideoUrl');
+    res.redirect('/admin/settings');
   } catch (err) {
     next(err);
   }
