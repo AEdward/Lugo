@@ -3,6 +3,7 @@ require('dotenv').config();
 const createApp = require('./app');
 const { sequelize } = require('./models');
 const { startBookingExpiryJob } = require('./services/bookingExpiryJob');
+const { startBackupJob } = require('./services/backupJob');
 
 const PORT = process.env.PORT || 3000;
 
@@ -16,6 +17,7 @@ async function start() {
   });
 
   startBookingExpiryJob();
+  startBackupJob();
 }
 
 start().catch((err) => {

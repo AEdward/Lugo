@@ -35,6 +35,7 @@
           <td><span class="badge <%= f.inStock ? 'badge-confirmed' : 'badge-rejected' %>"><%= f.inStock ? 'In stock' : 'Hidden' %></span></td>
           <td>
             <div class="inline-actions">
+              <a class="btn btn-sm btn-outline" href="/admin/fabrics/<%= f.id %>/edit">Edit</a>
               <form method="POST" action="/admin/fabrics/<%= f.id %>/toggle-stock"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-outline" type="submit"><%= f.inStock ? 'Hide' : 'Show' %></button></form>
               <form method="POST" action="/admin/fabrics/<%= f.id %>/delete"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-danger" type="submit">Delete</button></form>
             </div>

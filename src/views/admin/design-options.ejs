@@ -49,7 +49,10 @@
           <td><%= o.name %></td>
           <td><%= o.priceCents > 0 ? ('+ETB ' + (o.priceCents/100).toLocaleString()) : 'Included' %></td>
           <td>
-            <form method="POST" action="/admin/design-options/<%= o.id %>/delete"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-danger" type="submit">Delete</button></form>
+            <div class="inline-actions">
+              <a class="btn btn-sm btn-outline" href="/admin/design-options/<%= o.id %>/edit">Edit</a>
+              <form method="POST" action="/admin/design-options/<%= o.id %>/delete"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-danger" type="submit">Delete</button></form>
+            </div>
           </td>
         </tr>
       <% }) %>

@@ -5,3 +5,4 @@ npm-debug.log*
 src/public/uploads/*
 !src/public/uploads/.gitkeep
 *.sqlite
+/backups/

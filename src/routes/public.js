@@ -7,6 +7,8 @@ const { formLimiter } = require('../middleware/rateLimit');
 
 const router = express.Router();
 
+const LEGAL_LAST_UPDATED = 'August 20, 2026';
+
 router.get('/', async (req, res, next) => {
   try {
     const [featured, heroVideoUrl] = await Promise.all([
@@ -25,6 +27,18 @@ router.get('/about', (req, res) => {
 
 router.get('/bespoke', (req, res) => {
   res.render('bespoke', { title: 'Bespoke Tailoring — Lugo Tailoring' });
+});
+
+router.get('/terms', (req, res) => {
+  res.render('legal/terms', { title: 'Terms of Service — Lugo Tailoring', lastUpdated: LEGAL_LAST_UPDATED });
+});
+
+router.get('/privacy', (req, res) => {
+  res.render('legal/privacy', { title: 'Privacy Policy — Lugo Tailoring', lastUpdated: LEGAL_LAST_UPDATED });
+});
+
+router.get('/refund-policy', (req, res) => {
+  res.render('legal/refund-policy', { title: 'Refund & Return Policy — Lugo Tailoring', lastUpdated: LEGAL_LAST_UPDATED });
 });
 
 router.get('/gallery', async (req, res, next) => {

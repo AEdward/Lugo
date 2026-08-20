@@ -242,6 +242,42 @@ router.post('/admin/fabrics', upload.single('image'), doubleCsrfProtection, asyn
   }
 });
 
+router.get('/admin/fabrics/:id/edit', async (req, res, next) => {
+  try {
+    const fabric = await Fabric.findByPk(req.params.id);
+    if (!fabric) return res.status(404).render('errors/404', { title: 'Not found' });
+    res.render('admin/fabric-edit', { title: 'Edit Fabric — Admin', layout: 'layouts/admin', fabric, error: null });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/admin/fabrics/:id/edit', upload.single('image'), doubleCsrfProtection, async (req, res, next) => {
+  try {
+    const fabric = await Fabric.findByPk(req.params.id);
+    if (!fabric) return res.status(404).render('errors/404', { title: 'Not found' });
+
+    fabric.name = req.body.name;
+    fabric.description = req.body.description || null;
+    fabric.material = req.body.material || null;
+    fabric.color = req.body.color || null;
+    fabric.priceCents = Math.round(parseFloat(req.body.price || '0') * 100);
+
+    if (req.file) {
+      const previousUrl = fabric.imageUrl;
+      fabric.imageUrl = `/uploads/${req.file.filename}`;
+      if (previousUrl && previousUrl.startsWith('/uploads/')) {
+        fs.unlink(path.join(__dirname, '..', 'public', previousUrl), () => {});
+      }
+    }
+
+    await fabric.save();
+    res.redirect('/admin/fabrics');
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.post('/admin/fabrics/:id/toggle-stock', async (req, res, next) => {
   try {
     const fabric = await Fabric.findByPk(req.params.id);
@@ -286,6 +322,46 @@ router.post('/admin/design-options', upload.single('image'), doubleCsrfProtectio
       imageUrl: req.file ? `/uploads/${req.file.filename}` : null,
       sortOrder: count + 1,
     });
+    res.redirect('/admin/design-options');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/admin/design-options/:id/edit', async (req, res, next) => {
+  try {
+    const option = await DesignOption.findByPk(req.params.id);
+    if (!option) return res.status(404).render('errors/404', { title: 'Not found' });
+    res.render('admin/design-option-edit', {
+      title: 'Edit Design Option — Admin',
+      layout: 'layouts/admin',
+      option,
+      error: null,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/admin/design-options/:id/edit', upload.single('image'), doubleCsrfProtection, async (req, res, next) => {
+  try {
+    const option = await DesignOption.findByPk(req.params.id);
+    if (!option) return res.status(404).render('errors/404', { title: 'Not found' });
+
+    option.category = req.body.category;
+    option.name = req.body.name;
+    option.description = req.body.description || null;
+    option.priceCents = Math.round(parseFloat(req.body.price || '0') * 100);
+
+    if (req.file) {
+      const previousUrl = option.imageUrl;
+      option.imageUrl = `/uploads/${req.file.filename}`;
+      if (previousUrl && previousUrl.startsWith('/uploads/')) {
+        fs.unlink(path.join(__dirname, '..', 'public', previousUrl), () => {});
+      }
+    }
+
+    await option.save();
     res.redirect('/admin/design-options');
   } catch (err) {
     next(err);

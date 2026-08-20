@@ -59,6 +59,8 @@ function createApp() {
     res.locals.currentAdmin = null;
     res.locals.currentCustomer = null;
     res.locals.flashError = null;
+    // Public pages only (layouts/admin.ejs doesn't include the analytics partial).
+    res.locals.gaMeasurementId = process.env.GA_MEASUREMENT_ID || null;
     next();
   });
 

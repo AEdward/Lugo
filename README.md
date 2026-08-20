@@ -41,6 +41,7 @@ Edit `.env` and set:
 - `BASE_URL` — the public URL of the site (used to build Chapa callback/return URLs — must be reachable from the internet for the payment callback to work, e.g. via a tunnel in local dev)
 - `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD` / `SMTP_FROM` — optional, for email notifications (see below). Leave blank to skip emails entirely (bookings/orders/messages still work, they're just not emailed).
 - `ADMIN_NOTIFICATION_EMAIL` — where "new booking / new order / new message" emails go. Defaults to `ADMIN_EMAIL` if left blank.
+- `GA_MEASUREMENT_ID` — optional, a Google Analytics 4 measurement ID (`G-XXXXXXX`). Leave blank to skip analytics entirely — no tracking script loads at all.
 
 Then run migrations and seed sample data (admin user, fabrics, design options, gallery placeholders):
 
@@ -81,6 +82,36 @@ If SMTP isn't configured, nothing breaks — emails are skipped and logged to th
 ## Payments
 
 Checkout creates one `Order` row per cart item, all sharing a single Chapa transaction reference, then redirects the customer to Chapa's hosted checkout. Chapa calls back to `POST /order/webhook` on completion, and the customer is redirected to `GET /order/return`, both of which verify the transaction with Chapa before marking the order(s) as paid.
+
+## Backups
+
+```bash
+npm run backup
+```
+
+Dumps the MySQL database and copies the `src/public/uploads` folder into timestamped files under `backups/` (override the location with `BACKUP_DIR`), then prunes old backups beyond `BACKUP_RETENTION_COUNT` (default 14, kept independently for the database and uploads).
+
+This works standalone — schedule it with cron, Windows Task Scheduler, or your host's cron panel, e.g. daily at 3am:
+
+```
+0 3 * * * cd /path/to/lugo && npm run backup >> backups/backup.log 2>&1
+```
+
+Alternatively, set `BACKUP_ENABLED=true` to have the running app schedule this automatically once a day (`BACKUP_HOUR`, default 3am server time) — useful if you don't have access to an external scheduler (e.g. local XAMPP development). Don't enable both an external cron job and `BACKUP_ENABLED` at once, or backups will run twice.
+
+If `mysqldump` isn't on your PATH (common on XAMPP/Windows), set `MYSQLDUMP_PATH` to its full location, e.g. `C:\xampp\mysql\bin\mysqldump.exe`.
+
+**To restore** a database backup:
+
+```bash
+mysql -u lugo_app -p lugo_tailoring < backups/db-lugo_tailoring-20260115-030000.sql
+```
+
+To restore uploads, copy the contents of the relevant `backups/uploads-*` folder back into `src/public/uploads`.
+
+## Analytics
+
+Set `GA_MEASUREMENT_ID` to a Google Analytics 4 measurement ID (from your GA4 property's Data Streams settings) to load the tracking snippet on every public page. Leave it blank and nothing loads — no script, no cookie, no third-party request. The admin dashboard is never tracked, regardless of this setting.
 
 ## Project structure
 
