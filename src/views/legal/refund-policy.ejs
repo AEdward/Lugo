@@ -1,7 +1,7 @@
 <section class="page-header">
   <div class="container">
-    <span class="eyebrow">Legal</span>
-    <h1>Refund &amp; Return Policy</h1>
+    <span class="eyebrow"><%= (content && content.eyebrow) || 'Legal' %></span>
+    <h1><%= (content && content.heading) || 'Refund & Return Policy' %></h1>
   </div>
 </section>
 
@@ -10,6 +10,9 @@
     <div class="legal-content">
       <p class="legal-updated">Last updated: <%= lastUpdated %></p>
 
+      <% if (content && content.body) { %>
+        <%- content.body %>
+      <% } else { %>
       <h2>1. Custom-Made Garments</h2>
       <p>Every garment ordered through our store is cut and produced specifically for you, based on the measurements and design options you submit at checkout. Because of this, made-to-measure orders are generally <strong>not eligible for return or refund</strong> once production has begun, except as described below.</p>
 
@@ -26,10 +29,11 @@
       <p>Booking an appointment doesn't require payment, so there's no fee to cancel or reschedule — just let us know as early as you can so we can offer the slot to another client.</p>
 
       <h2>6. How Refunds Are Issued</h2>
-      <p>Approved refunds are returned to the original payment method used at checkout via Chapa, and may take several business days to appear depending on your bank or mobile money provider.</p>
+      <p>Approved refunds are returned the same way you paid: back to the original card or mobile money account for Chapa payments, by bank transfer for bank transfer payments, or in cash for cash payments. Refunds may take several business days to appear depending on your bank or mobile money provider.</p>
 
       <h2>7. Contact</h2>
       <p>To request a cancellation, report a defect, or ask about this policy, <a href="/contact">contact us</a> or email <a href="mailto:hello@lugotailoring.com">hello@lugotailoring.com</a>.</p>
+      <% } %>
     </div>
   </div>
 </section>

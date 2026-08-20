@@ -1,7 +1,7 @@
 <section class="page-header">
   <div class="container">
-    <span class="eyebrow">Legal</span>
-    <h1>Terms of Service</h1>
+    <span class="eyebrow"><%= (content && content.eyebrow) || 'Legal' %></span>
+    <h1><%= (content && content.heading) || 'Terms of Service' %></h1>
   </div>
 </section>
 
@@ -10,6 +10,9 @@
     <div class="legal-content">
       <p class="legal-updated">Last updated: <%= lastUpdated %></p>
 
+      <% if (content && content.body) { %>
+        <%- content.body %>
+      <% } else { %>
       <h2>1. Agreement to Terms</h2>
       <p>These Terms of Service govern your use of the Lugo Tailoring website and the booking, custom fabric, and design ordering services we offer through it. By using this site, booking an appointment, or placing an order, you agree to these terms.</p>
 
@@ -20,7 +23,7 @@
       <p>Appointment requests are held for a limited period while we review and confirm them. We reserve the right to reject or reschedule a request if the requested time is unavailable. Please arrive on time — late arrivals may need to be rescheduled.</p>
 
       <h2>4. Orders, Pricing &amp; Payment</h2>
-      <p>Prices shown in the store are quoted in Ethiopian Birr (ETB) and may change without notice. Payment for made-to-measure orders is processed securely through Chapa at the time of checkout. An order is only confirmed once payment has been successfully completed.</p>
+      <p>Prices shown in the store are quoted in Ethiopian Birr (ETB) and may change without notice. At checkout you can pay securely online through Chapa, by bank transfer (upload your receipt for us to verify), or in cash in person. An order is only confirmed once payment has been verified.</p>
 
       <h2>5. Custom &amp; Made-to-Measure Orders</h2>
       <p>Every garment is cut and produced specifically for you, based on the measurements and design options you provide at checkout. Please double-check your measurements and selections carefully before submitting payment — see our <a href="/refund-policy">Refund &amp; Return Policy</a> for details on how this affects cancellations and returns.</p>
@@ -42,6 +45,7 @@
 
       <h2>11. Contact</h2>
       <p>Questions about these terms? <a href="/contact">Contact us</a> or email <a href="mailto:hello@lugotailoring.com">hello@lugotailoring.com</a>.</p>
+      <% } %>
     </div>
   </div>
 </section>

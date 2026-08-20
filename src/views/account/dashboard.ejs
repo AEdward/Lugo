@@ -7,6 +7,16 @@
   <div class="container">
     <%- include('../partials/account-nav') %>
 
+    <div class="panel" style="margin-bottom:24px;">
+      <h3 style="margin-bottom:12px;">Profile</h3>
+      <div class="grid grid-2">
+        <p style="color:var(--color-ink-soft); margin:0;"><strong style="color:var(--color-ink);">Email</strong><br><%= currentCustomer.email %></p>
+        <p style="color:var(--color-ink-soft); margin:0;"><strong style="color:var(--color-ink);">Phone</strong><br><%= currentCustomer.phone || 'Not provided' %></p>
+      </div>
+      <p style="color:var(--color-ink-soft); margin:14px 0 0;">Member since <%= new Date(memberSince).toLocaleDateString([], { year: 'numeric', month: 'long' }) %></p>
+      <a class="btn btn-outline btn-sm" href="/account/settings" style="margin-top:14px;">Edit Profile</a>
+    </div>
+
     <div class="grid grid-2">
       <div class="panel">
         <h3 style="margin-bottom:12px;">Upcoming Appointment</h3>

@@ -27,8 +27,29 @@
             <input type="tel" id="phone" name="phone" value="<%= values.phone || '' %>" required>
           </div>
         </div>
-        <p class="hint" style="margin-bottom:20px;">You'll be redirected to Chapa to complete your payment securely.</p>
-        <button class="btn btn-primary btn-block" type="submit">Continue to Payment</button>
+        <div class="field">
+          <label>Payment Method</label>
+          <div style="display:flex; flex-direction:column; gap:10px; margin-top:6px;">
+            <label style="display:flex; align-items:center; gap:8px; font-weight:400;">
+              <input type="radio" name="paymentMethod" value="chapa" onchange="document.getElementById('bankInfo').style.display='none';document.getElementById('cashInfo').style.display='none';" <%= (!values.paymentMethod || values.paymentMethod === 'chapa') ? 'checked' : '' %>>
+              Pay Online (Chapa) — card, mobile money
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; font-weight:400;">
+              <input type="radio" name="paymentMethod" value="bank_transfer" onchange="document.getElementById('bankInfo').style.display='block';document.getElementById('cashInfo').style.display='none';" <%= values.paymentMethod === 'bank_transfer' ? 'checked' : '' %>>
+              Bank Transfer — upload your receipt after ordering
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; font-weight:400;">
+              <input type="radio" name="paymentMethod" value="cash" onchange="document.getElementById('bankInfo').style.display='none';document.getElementById('cashInfo').style.display='block';" <%= values.paymentMethod === 'cash' ? 'checked' : '' %>>
+              Cash — pay in person
+            </label>
+          </div>
+        </div>
+
+        <div id="bankInfo" class="alert alert-info" style="display:<%= values.paymentMethod === 'bank_transfer' ? 'block' : 'none' %>; margin-bottom:16px; white-space:pre-line;"><%= bankTransferDetails || 'Bank transfer details will be shown after you place your order.' %></div>
+        <div id="cashInfo" class="alert alert-info" style="display:<%= values.paymentMethod === 'cash' ? 'block' : 'none' %>; margin-bottom:16px;"><%= cashPaymentInstructions %></div>
+
+        <p class="hint" style="margin-bottom:20px;">Choosing Chapa redirects you to complete payment securely online. Cash and Bank Transfer orders are confirmed once we've verified your payment.</p>
+        <button class="btn btn-primary btn-block" type="submit">Continue</button>
       </form>
     </div>
 

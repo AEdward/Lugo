@@ -9,6 +9,10 @@ const SITE_SETTING_DEFAULTS = {
   socialFacebook: '',
   socialInstagram: '',
   socialTiktok: '',
+  // Shown to customers who choose "Bank Transfer" at checkout.
+  bankTransferDetails: '',
+  // Shown to customers who choose "Cash" at checkout.
+  cashPaymentInstructions: 'Pay in cash when you visit the studio for your fitting or pickup.',
 };
 
 async function get(key, fallback = null) {

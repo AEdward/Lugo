@@ -6,14 +6,16 @@ Website for Lugo Tailoring — a custom luxury suit tailoring studio. Built with
 
 - **Public site** — Home, About, Gallery, Store, Booking, Contact
 - **Appointment booking** — customers pick an open time slot; the request is held as "pending" until an admin approves it. Unapproved holds automatically expire (default 24h) and free the slot back up.
-- **Custom suit ordering** — customers choose a fabric, configure design options (lapel, buttons, lining, fit, monogram, pocket), and submit their exact measurements, then pay online via [Chapa](https://developer.chapa.co).
+- **Custom suit ordering** — customers choose a fabric, configure design options (lapel, buttons, lining, fit, monogram, pocket), and submit their exact measurements, then pay via [Chapa](https://developer.chapa.co) (card/mobile money), bank transfer (upload a receipt for admin review), or cash in person.
 - **Admin dashboard** (`/admin`) — approve/reject bookings, manage orders and fulfillment status, manage fabrics, design options, and gallery images, and read contact form messages.
 - **Admin user management** (`/admin/users`) — add/edit/delete other admin logins, with role (admin/staff), a self-delete guard, and a last-admin-standing guard.
-- **Pages** (`/admin/pages`) — edit the eyebrow/heading/intro copy and SEO title/description for Home, About, Bespoke, Gallery, and Contact; the homepage hero video also lives here now (`/admin/pages/home/edit`), not under Settings.
+- **Pages** (`/admin/pages`) — edit the eyebrow/heading/intro copy and SEO title/description for Home, About, Bespoke, Gallery, and Contact; the homepage hero video also lives here now (`/admin/pages/home/edit`), not under Settings. Terms of Service, Privacy Policy, and Refund & Return Policy are also editable here as full HTML, with their own Last Updated date.
+- **Admin client management** (`/admin/clients`) — view every customer account, their bookings and orders, reset a client's password directly, or delete their account (their bookings/orders stay on record, just unlinked).
 - **Site Settings** (`/admin/settings`) — site name, contact email/phone/address, and social links, shown across the footer/contact page.
 - **SEO** — per-page meta title/description (editable via Pages) plus Open Graph/Twitter card tags, `/sitemap.xml`, and `/robots.txt`.
 - **Self-hosted analytics** (`/admin/analytics`) — page views, unique visitors, top pages, and top referrers, tracked entirely in our own database. No third party (Google or otherwise) ever sees this traffic, and no raw IP address is stored.
-- **In-app notifications** — admin and customers each get a notification bell (with unread badge) for events like new bookings/orders/messages, booking approval/rejection, and order status changes — separate from the email notifications, and each side only ever sees its own.
+- **In-app notifications** — admin and customers each get a notification bell dropdown (with unread badge) for events like new bookings/orders/messages, booking approval/rejection, and order status changes — separate from the email notifications, and each side only ever sees its own. Clicking a notification's full message takes you to the notifications page.
+- **Customer nav** — a Profile dropdown (Profile, My Bookings, My Orders, Settings, Log Out) alongside the Notifications dropdown; the Profile page shows account details (email, phone, member since).
 - **Site Health** (`/admin/health`) — a one-page diagnostic: database connectivity, uptime/memory, which optional integrations (SMTP, Chapa, analytics, backups) are configured, latest backup, and a few at-a-glance business counts.
 
 ## Tech stack
@@ -96,7 +98,13 @@ If SMTP isn't configured, nothing breaks — emails are skipped and logged to th
 
 ## Payments
 
-Checkout creates one `Order` row per cart item, all sharing a single Chapa transaction reference, then redirects the customer to Chapa's hosted checkout. Chapa calls back to `POST /order/webhook` on completion, and the customer is redirected to `GET /order/return`, both of which verify the transaction with Chapa before marking the order(s) as paid.
+Checkout creates one `Order` row per cart item, all sharing a single transaction reference, and offers three payment methods:
+
+- **Chapa** (default) — redirects to Chapa's hosted checkout. Chapa calls back to `POST /order/webhook` on completion, and the customer is redirected to `GET /order/return`, both of which verify the transaction with Chapa before marking the order(s) as paid.
+- **Bank Transfer** — the order is created as pending; the customer lands on `GET /order/confirmation/:txRef` (also reachable later from "My Orders") to upload a receipt (JPG/PNG/PDF). Admin reviews it on the order detail page and marks it Paid, Unpaid, or No Valid Receipt — marking Paid settles the order the same way a Chapa payment does (same emails/notifications). Bank details shown at checkout are set in Settings.
+- **Cash** — the order is created as pending; admin marks it paid in person from the order detail page ("Mark Cash Received").
+
+All three paths funnel through `markOrderGroupPaid()` (`src/services/orderPaymentService.js`) so the "order is now paid" side effects (emails, in-app notifications) only ever happen once, from a single place, regardless of which payment method settled it.
 
 ## Backups
 

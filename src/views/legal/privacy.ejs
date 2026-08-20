@@ -1,7 +1,7 @@
 <section class="page-header">
   <div class="container">
-    <span class="eyebrow">Legal</span>
-    <h1>Privacy Policy</h1>
+    <span class="eyebrow"><%= (content && content.eyebrow) || 'Legal' %></span>
+    <h1><%= (content && content.heading) || 'Privacy Policy' %></h1>
   </div>
 </section>
 
@@ -10,6 +10,9 @@
     <div class="legal-content">
       <p class="legal-updated">Last updated: <%= lastUpdated %></p>
 
+      <% if (content && content.body) { %>
+        <%- content.body %>
+      <% } else { %>
       <h2>1. Information We Collect</h2>
       <p>When you book an appointment, place an order, create an account, or contact us, we collect the information you provide directly, which may include:</p>
       <ul>
@@ -51,6 +54,7 @@
 
       <h2>10. Contact</h2>
       <p>Questions about this policy? <a href="/contact">Contact us</a> or email <a href="mailto:hello@lugotailoring.com">hello@lugotailoring.com</a>.</p>
+      <% } %>
     </div>
   </div>
 </section>

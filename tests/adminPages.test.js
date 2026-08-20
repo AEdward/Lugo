@@ -40,6 +40,29 @@ describe('admin pages CMS', () => {
     expect(home.text).toContain('content="Custom SEO description."');
   });
 
+  test('editing a legal page updates its public body and Last Updated date', async () => {
+    const editPage = await agent.get('/admin/pages/terms/edit');
+    expect(editPage.status).toBe(200);
+    expect(editPage.text).toContain('Body (HTML)');
+    const token = extractCsrfToken(editPage.text);
+
+    const res = await agent.post('/admin/pages/terms/edit').type('form').send({
+      _csrf: token,
+      eyebrow: 'Legal',
+      heading: 'Terms of Service',
+      lastUpdated: 'September 1, 2026',
+      body: '<h2>1. Test Section</h2><p>Updated legal text.</p>',
+      seoTitle: 'Terms — Test',
+      seoDescription: 'Test SEO description.',
+    });
+    expect(res.status).toBe(302);
+
+    const terms = await request(app).get('/terms');
+    expect(terms.text).toContain('Test Section');
+    expect(terms.text).toContain('Updated legal text.');
+    expect(terms.text).toContain('September 1, 2026');
+  });
+
   test('an unknown page slug 404s', async () => {
     const res = await agent.get('/admin/pages/nonexistent/edit');
     expect(res.status).toBe(404);

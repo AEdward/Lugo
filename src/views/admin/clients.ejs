@@ -1,0 +1,29 @@
+<div class="admin-header">
+  <div>
+    <h1>Clients</h1>
+    <p style="color:var(--color-ink-soft);">Customer accounts registered on the site.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <% if (customers && customers.length) { %>
+    <table class="simple">
+      <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Bookings</th><th>Orders</th><th>Joined</th><th></th></tr></thead>
+      <tbody>
+        <% customers.forEach(function(c) { %>
+          <tr>
+            <td><%= c.name %></td>
+            <td><%= c.email %></td>
+            <td><%= c.phone || '—' %></td>
+            <td><%= (c.Bookings || []).length %></td>
+            <td><%= (c.Orders || []).length %></td>
+            <td><%= new Date(c.createdAt).toLocaleDateString() %></td>
+            <td><a class="btn btn-sm btn-outline" href="/admin/clients/<%= c.id %>">View</a></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p style="color:var(--color-ink-soft);">No customer accounts yet.</p>
+  <% } %>
+</div>

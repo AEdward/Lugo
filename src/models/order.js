@@ -69,6 +69,19 @@ module.exports = (sequelize, DataTypes) => {
     },
     chapaTxRef: { type: DataTypes.STRING, allowNull: true },
     chapaCheckoutUrl: { type: DataTypes.STRING, allowNull: true },
+    paymentMethod: {
+      type: DataTypes.ENUM('chapa', 'cash', 'bank_transfer'),
+      allowNull: false,
+      defaultValue: 'chapa',
+    },
+    receiptUrl: { type: DataTypes.STRING, allowNull: true },
+    // Only meaningful when paymentMethod is 'bank_transfer'; stays
+    // 'not_applicable' for chapa/cash orders.
+    receiptStatus: {
+      type: DataTypes.ENUM('not_applicable', 'awaiting_upload', 'pending_review', 'paid', 'unpaid', 'invalid_receipt'),
+      allowNull: false,
+      defaultValue: 'not_applicable',
+    },
   });
 
   Order.associate = (models) => {

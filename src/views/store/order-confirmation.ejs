@@ -1,3 +1,8 @@
+
+<%
+  const method = orders && orders.length ? orders[0].paymentMethod : 'chapa';
+  const receiptStatus = orders && orders.length ? orders[0].receiptStatus : 'not_applicable';
+%>
 <section class="section" style="text-align:center; padding-top:100px;">
   <div class="container">
     <% if (paid) { %>
@@ -6,6 +11,41 @@
       <p style="color:var(--color-ink-soft); max-width:520px; margin:0 auto 32px;">
         We've received your payment and your custom order details. Our tailors will be in touch to confirm next steps.
       </p>
+    <% } else if (method === 'cash') { %>
+      <span class="eyebrow" style="color:var(--color-warning);">Payment Pending</span>
+      <h1>Your order is reserved</h1>
+      <p style="color:var(--color-ink-soft); max-width:520px; margin:0 auto 32px;">
+        Please bring cash payment when you visit the studio. We'll mark your order as paid once it's received.
+      </p>
+    <% } else if (method === 'bank_transfer') { %>
+      <span class="eyebrow" style="color:var(--color-warning);">Awaiting Bank Transfer</span>
+      <h1>One more step — upload your receipt</h1>
+      <p style="color:var(--color-ink-soft); max-width:520px; margin:0 auto 32px;">
+        Complete your bank transfer using the details we shared, then upload your receipt below so we can confirm your payment.
+      </p>
+
+      <% if (receiptError) { %>
+        <div class="alert alert-error" style="max-width:480px;margin:0 auto 20px;text-align:left;"><%= receiptError %></div>
+      <% } %>
+
+      <% if (receiptStatus === 'pending_review') { %>
+        <div class="alert alert-info" style="max-width:480px;margin:0 auto 24px;">Receipt uploaded — we'll confirm your payment shortly.</div>
+      <% } else { %>
+        <form method="POST" action="/order/confirmation/<%= txRef %>/receipt" enctype="multipart/form-data" style="max-width:420px;margin:0 auto 24px;text-align:left;">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <% if (receiptStatus === 'unpaid' || receiptStatus === 'invalid_receipt') { %>
+            <div class="alert alert-error">
+              <%= receiptStatus === 'invalid_receipt' ? "Your last receipt couldn't be validated." : "We couldn't confirm payment from your last receipt." %>
+              Please upload a clearer receipt.
+            </div>
+          <% } %>
+          <div class="field">
+            <label for="receipt">Upload Receipt (JPG, PNG, or PDF)</label>
+            <input type="file" id="receipt" name="receipt" accept="image/png,image/jpeg,application/pdf" required>
+          </div>
+          <button class="btn btn-primary btn-block" type="submit">Upload Receipt</button>
+        </form>
+      <% } %>
     <% } else { %>
       <span class="eyebrow" style="color:var(--color-warning);">Payment Pending</span>
       <h1>We're confirming your payment</h1>
@@ -37,7 +77,10 @@
               <% }) %>
             </div>
             <div class="summary-row" style="margin-bottom:0;">
-              <span><span class="badge badge-<%= o.paymentStatus %>"><%= o.paymentStatus %></span></span>
+              <span>
+                <span class="badge badge-<%= o.paymentStatus %>"><%= o.paymentStatus %></span>
+                <span style="color:var(--color-ink-soft); font-size:0.8rem; text-transform:capitalize;"><%= o.paymentMethod.replace('_', ' ') %></span>
+              </span>
               <span><strong>ETB <%= (o.totalCents/100).toLocaleString() %></strong></span>
             </div>
           </div>

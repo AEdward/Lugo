@@ -6,6 +6,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  document.querySelectorAll('.dropdown-toggle').forEach((toggle) => {
+    const menu = toggle.nextElementSibling;
+    if (!menu) return;
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const willOpen = !menu.classList.contains('open');
+      document.querySelectorAll('.dropdown-menu.open').forEach((m) => m.classList.remove('open'));
+      if (willOpen) menu.classList.add('open');
+    });
+  });
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.dropdown-menu.open').forEach((m) => m.classList.remove('open'));
+  });
+
   const stickyCta = document.getElementById('stickyBookCta');
   if (stickyCta) {
     const reveal = () => {

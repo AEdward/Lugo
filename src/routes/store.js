@@ -1,12 +1,14 @@
 const express = require('express');
 const crypto = require('crypto');
-const { Op } = require('sequelize');
 const { body, validationResult } = require('express-validator');
 const { Fabric, DesignOption, Order } = require('../models');
 const cartService = require('../services/cartService');
 const chapaService = require('../services/chapaService');
-const notifications = require('../services/notifications');
 const notificationService = require('../services/notificationService');
+const { markOrderGroupPaid } = require('../services/orderPaymentService');
+const settingsService = require('../services/settingsService');
+const receiptUpload = require('../middleware/receiptUpload');
+const { doubleCsrfProtection } = require('../middleware/csrf');
 const { checkoutLimiter } = require('../middleware/rateLimit');
 
 const router = express.Router();
@@ -122,13 +124,16 @@ router.get('/checkout', async (req, res, next) => {
     const cart = cartService.getCart(req);
     const details = await cartService.buildCartDetails(cart);
     if (details.items.length === 0) return res.redirect('/store');
+    const siteSettings = await settingsService.getSiteSettings();
     res.render('store/checkout', {
       title: 'Checkout — Lugo Tailoring',
       ...details,
+      bankTransferDetails: siteSettings.bankTransferDetails,
+      cashPaymentInstructions: siteSettings.cashPaymentInstructions,
       errors: [],
       values: req.session.customer
-        ? { customerName: req.session.customer.name, email: req.session.customer.email, phone: req.session.customer.phone || '' }
-        : {},
+        ? { customerName: req.session.customer.name, email: req.session.customer.email, phone: req.session.customer.phone || '', paymentMethod: 'chapa' }
+        : { paymentMethod: 'chapa' },
     });
   } catch (err) {
     next(err);
@@ -142,6 +147,7 @@ router.post(
     body('customerName').trim().notEmpty().withMessage('Please enter your full name.'),
     body('email').trim().isEmail().withMessage('Please enter a valid email.'),
     body('phone').trim().notEmpty().withMessage('Please enter a phone number.'),
+    body('paymentMethod').isIn(['chapa', 'cash', 'bank_transfer']).withMessage('Please choose a payment method.'),
   ],
   async (req, res, next) => {
     try {
@@ -151,15 +157,18 @@ router.post(
 
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        const siteSettings = await settingsService.getSiteSettings();
         return res.status(400).render('store/checkout', {
           title: 'Checkout — Lugo Tailoring',
           ...details,
+          bankTransferDetails: siteSettings.bankTransferDetails,
+          cashPaymentInstructions: siteSettings.cashPaymentInstructions,
           errors: errors.array(),
           values: req.body,
         });
       }
 
-      const { customerName, email, phone } = req.body;
+      const { customerName, email, phone, paymentMethod } = req.body;
       const txRef = `lugo-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
 
       const createdOrders = await Order.bulkCreate(
@@ -179,8 +188,17 @@ router.post(
           paymentStatus: 'pending',
           status: 'pending_payment',
           chapaTxRef: txRef,
+          paymentMethod,
+          receiptStatus: paymentMethod === 'bank_transfer' ? 'awaiting_upload' : 'not_applicable',
         }))
       );
+
+      if (paymentMethod !== 'chapa') {
+        // Cash and bank transfer are settled in person / manually by an
+        // admin — no external payment gateway involved.
+        cartService.clearCart(req);
+        return res.redirect(`/order/confirmation/${encodeURIComponent(txRef)}`);
+      }
 
       const [firstName, ...rest] = customerName.trim().split(' ');
       const amountBirr = (details.totalCents / 100).toFixed(2);
@@ -215,6 +233,70 @@ router.post(
   }
 );
 
+// Confirmation page for cash / bank transfer orders — these never go
+// through Chapa, so there's nothing to verify, unlike /order/return.
+router.get('/order/confirmation/:txRef', async (req, res, next) => {
+  try {
+    const orders = await Order.findAll({ where: { chapaTxRef: req.params.txRef }, include: [Fabric] });
+    if (orders.length === 0) return res.redirect('/store');
+
+    res.render('store/order-confirmation', {
+      title: 'Order Confirmation — Lugo Tailoring',
+      orders,
+      paid: orders[0].paymentStatus === 'paid',
+      txRef: req.params.txRef,
+      receiptError: null,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/order/confirmation/:txRef/receipt', (req, res, next) => {
+  receiptUpload.single('receipt')(req, res, (err) => {
+    if (err) {
+      return Order.findAll({ where: { chapaTxRef: req.params.txRef }, include: [Fabric] }).then((orders) =>
+        res.status(400).render('store/order-confirmation', {
+          title: 'Order Confirmation — Lugo Tailoring',
+          orders,
+          paid: orders.length > 0 && orders[0].paymentStatus === 'paid',
+          txRef: req.params.txRef,
+          receiptError: err.message,
+        })
+      );
+    }
+
+    // req.body is only populated once multer (above) has parsed the
+    // multipart form, so the CSRF token can only be checked after this point.
+    doubleCsrfProtection(req, res, async (csrfErr) => {
+      if (csrfErr) return next(csrfErr);
+
+      try {
+        const orders = await Order.findAll({ where: { chapaTxRef: req.params.txRef } });
+        if (orders.length === 0 || !req.file) return res.redirect(`/order/confirmation/${req.params.txRef}`);
+
+        await Order.update(
+          { receiptUrl: `/uploads/${req.file.filename}`, receiptStatus: 'pending_review' },
+          { where: { chapaTxRef: req.params.txRef } }
+        );
+
+        notificationService
+          .notifyAdmin({
+            type: 'receipt_uploaded',
+            title: `Bank transfer receipt uploaded — ${orders[0].customerName}`,
+            body: 'Review the receipt and mark the order paid, unpaid, or invalid.',
+            link: `/admin/orders/${orders[0].id}`,
+          })
+          .catch(() => {});
+
+        res.redirect(`/order/confirmation/${req.params.txRef}`);
+      } catch (err2) {
+        next(err2);
+      }
+    });
+  });
+});
+
 // Chapa calls this server-to-server after payment completes.
 router.post('/order/webhook', express.json(), async (req, res) => {
   try {
@@ -238,6 +320,8 @@ router.get('/order/return', async (req, res, next) => {
       title: 'Order Confirmation — Lugo Tailoring',
       orders,
       paid: orders.length > 0 && orders[0].paymentStatus === 'paid',
+      txRef,
+      receiptError: null,
     });
   } catch (err) {
     next(err);
@@ -252,44 +336,7 @@ async function settleOrdersForTxRef(txRef) {
   const verification = await chapaService.verifyTransaction(txRef);
   const paid = verification.status === 'success' && verification.data?.status === 'success';
 
-  if (paid) {
-    // The webhook and the customer's return-redirect can both reach this
-    // around the same time — only the request that actually flips the row
-    // (not already 'paid') should send notifications, or a race sends two.
-    const [affectedCount] = await Order.update(
-      { paymentStatus: 'paid', status: 'paid' },
-      { where: { chapaTxRef: txRef, paymentStatus: { [Op.ne]: 'paid' } } }
-    );
-    const paidOrders = await Order.findAll({ where: { chapaTxRef: txRef }, include: [Fabric] });
-    if (affectedCount > 0) {
-      notifications.sendOrdersPaid(paidOrders).catch(() => {});
-      notifications.notifyAdminNewOrders(paidOrders).catch(() => {});
-
-      const totalCents = paidOrders.reduce((sum, o) => sum + o.totalCents, 0);
-      notificationService
-        .notifyAdmin({
-          type: 'order_paid',
-          title: `New paid order — ${paidOrders[0].customerName}`,
-          body: `${paidOrders.length} item(s), ETB ${(totalCents / 100).toLocaleString()}`,
-          link: `/admin/orders/${paidOrders[0].id}`,
-        })
-        .catch(() => {});
-
-      // All items from one checkout share the same customerId (or all guest).
-      const customerId = paidOrders[0].customerId;
-      if (customerId) {
-        notificationService
-          .notifyCustomer(customerId, {
-            type: 'order_paid',
-            title: 'Payment received',
-            body: `Your order for ${paidOrders.length} item(s) is confirmed and moving into production.`,
-            link: '/account/orders',
-          })
-          .catch(() => {});
-      }
-    }
-    return paidOrders;
-  }
+  if (paid) return markOrderGroupPaid(txRef);
 
   return orders;
 }

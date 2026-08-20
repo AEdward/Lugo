@@ -63,16 +63,39 @@ router.get('/bespoke', async (req, res, next) => {
   }
 });
 
-router.get('/terms', (req, res) => {
-  res.render('legal/terms', { title: 'Terms of Service — Lugo Tailoring', lastUpdated: LEGAL_LAST_UPDATED });
+async function renderLegalPage(res, view, slug, fallbackTitle) {
+  const page = await Page.findOne({ where: { slug } });
+  const content = page ? page.content : {};
+  res.render(view, {
+    title: content.seoTitle || fallbackTitle,
+    pageMeta: buildPageMeta(content, fallbackTitle),
+    content,
+    lastUpdated: content.lastUpdated || LEGAL_LAST_UPDATED,
+  });
+}
+
+router.get('/terms', async (req, res, next) => {
+  try {
+    await renderLegalPage(res, 'legal/terms', 'terms', 'Terms of Service — Lugo Tailoring');
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.get('/privacy', (req, res) => {
-  res.render('legal/privacy', { title: 'Privacy Policy — Lugo Tailoring', lastUpdated: LEGAL_LAST_UPDATED });
+router.get('/privacy', async (req, res, next) => {
+  try {
+    await renderLegalPage(res, 'legal/privacy', 'privacy', 'Privacy Policy — Lugo Tailoring');
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.get('/refund-policy', (req, res) => {
-  res.render('legal/refund-policy', { title: 'Refund & Return Policy — Lugo Tailoring', lastUpdated: LEGAL_LAST_UPDATED });
+router.get('/refund-policy', async (req, res, next) => {
+  try {
+    await renderLegalPage(res, 'legal/refund-policy', 'refund-policy', 'Refund & Return Policy — Lugo Tailoring');
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.get('/gallery', async (req, res, next) => {

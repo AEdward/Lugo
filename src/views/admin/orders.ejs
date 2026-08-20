@@ -8,7 +8,7 @@
 <div class="panel">
   <% if (orders && orders.length) { %>
     <table class="simple">
-      <thead><tr><th>Order #</th><th>Customer</th><th>Fabric</th><th>Total</th><th>Payment</th><th>Status</th><th></th></tr></thead>
+      <thead><tr><th>Order #</th><th>Customer</th><th>Fabric</th><th>Total</th><th>Method</th><th>Payment</th><th>Status</th><th></th></tr></thead>
       <tbody>
         <% orders.forEach(function(o) { %>
           <tr>
@@ -16,6 +16,7 @@
             <td><%= o.customerName %><br><span style="color:var(--color-ink-soft); font-size:0.82rem;"><%= o.email %></span></td>
             <td><%= o.Fabric ? o.Fabric.name : '—' %></td>
             <td>ETB <%= (o.totalCents/100).toLocaleString() %></td>
+            <td style="text-transform:capitalize;"><%= o.paymentMethod.replace('_', ' ') %></td>
             <td><span class="badge badge-<%= o.paymentStatus %>"><%= o.paymentStatus %></span></td>
             <td><span class="badge badge-confirmed"><%= o.status %></span></td>
             <td><a class="btn btn-sm btn-outline" href="/admin/orders/<%= o.id %>">View</a></td>

@@ -4,7 +4,7 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const { Op } = require('sequelize');
-const { Booking, Order, Fabric, DesignOption, GalleryImage, ContactMessage, User, Page } = require('../models');
+const { Booking, Order, Fabric, DesignOption, GalleryImage, ContactMessage, User, Page, Customer } = require('../models');
 const { requireAdmin } = require('../middleware/auth');
 const { doubleCsrfProtection } = require('../middleware/csrf');
 const upload = require('../middleware/upload');
@@ -13,6 +13,7 @@ const bookingConfig = require('../config/booking');
 const settingsService = require('../services/settingsService');
 const notifications = require('../services/notifications');
 const notificationService = require('../services/notificationService');
+const { markOrderGroupPaid } = require('../services/orderPaymentService');
 const analyticsService = require('../services/analyticsService');
 const healthService = require('../services/healthService');
 
@@ -190,6 +191,50 @@ router.post('/admin/orders/:id/status', async (req, res, next) => {
         })
         .catch(() => {});
     }
+    res.redirect(`/admin/orders/${req.params.id}`);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/admin/orders/:id/mark-cash-paid', async (req, res, next) => {
+  try {
+    const order = await Order.findByPk(req.params.id);
+    if (order && order.paymentMethod === 'cash' && order.paymentStatus !== 'paid') {
+      await markOrderGroupPaid(order.chapaTxRef);
+    }
+    res.redirect(`/admin/orders/${req.params.id}`);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/admin/orders/:id/receipt-status', async (req, res, next) => {
+  try {
+    const allowed = ['paid', 'unpaid', 'invalid_receipt'];
+    const order = await Order.findByPk(req.params.id);
+    if (!order || order.paymentMethod !== 'bank_transfer' || !allowed.includes(req.body.receiptStatus)) {
+      return res.redirect(`/admin/orders/${req.params.id}`);
+    }
+
+    if (req.body.receiptStatus === 'paid') {
+      await markOrderGroupPaid(order.chapaTxRef);
+      await Order.update({ receiptStatus: 'paid' }, { where: { chapaTxRef: order.chapaTxRef } });
+    } else {
+      await Order.update({ receiptStatus: req.body.receiptStatus }, { where: { chapaTxRef: order.chapaTxRef } });
+      notificationService
+        .notifyCustomer(order.customerId, {
+          type: 'receipt_rejected',
+          title: `Order ${order.orderNumber}: receipt needs another look`,
+          body:
+            req.body.receiptStatus === 'invalid_receipt'
+              ? "We couldn't validate your receipt — please upload a clearer one."
+              : "We couldn't confirm payment from your receipt — please double-check and re-upload.",
+          link: `/order/confirmation/${order.chapaTxRef}`,
+        })
+        .catch(() => {});
+    }
+
     res.redirect(`/admin/orders/${req.params.id}`);
   } catch (err) {
     next(err);
@@ -435,6 +480,90 @@ router.post('/admin/messages/:id/delete', async (req, res, next) => {
   }
 });
 
+// ---------- Clients ----------
+
+router.get('/admin/clients', async (req, res, next) => {
+  try {
+    const customers = await Customer.findAll({
+      order: [['createdAt', 'DESC']],
+      include: [
+        { model: Booking, attributes: ['id'] },
+        { model: Order, attributes: ['id'] },
+      ],
+    });
+    res.render('admin/clients', { title: 'Clients — Admin', layout: 'layouts/admin', customers });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/admin/clients/:id', async (req, res, next) => {
+  try {
+    const customer = await Customer.findByPk(req.params.id);
+    if (!customer) return res.status(404).render('errors/404', { title: 'Not found' });
+
+    const [bookings, orders] = await Promise.all([
+      Booking.findAll({ where: { customerId: customer.id }, order: [['startsAt', 'DESC']] }),
+      Order.findAll({ where: { customerId: customer.id }, order: [['createdAt', 'DESC']], include: [Fabric] }),
+    ]);
+
+    res.render('admin/client-detail', {
+      title: `${customer.name} — Admin`,
+      layout: 'layouts/admin',
+      customer,
+      bookings,
+      orders,
+      error: null,
+      reset: req.query.reset === '1',
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post(
+  '/admin/clients/:id/reset-password',
+  [body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters.')],
+  async (req, res, next) => {
+    try {
+      const customer = await Customer.findByPk(req.params.id);
+      if (!customer) return res.status(404).render('errors/404', { title: 'Not found' });
+
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        const [bookings, orders] = await Promise.all([
+          Booking.findAll({ where: { customerId: customer.id }, order: [['startsAt', 'DESC']] }),
+          Order.findAll({ where: { customerId: customer.id }, order: [['createdAt', 'DESC']], include: [Fabric] }),
+        ]);
+        return res.status(400).render('admin/client-detail', {
+          title: `${customer.name} — Admin`,
+          layout: 'layouts/admin',
+          customer,
+          bookings,
+          orders,
+          error: errors.array()[0].msg,
+          reset: false,
+        });
+      }
+
+      customer.passwordHash = await bcrypt.hash(req.body.password, 10);
+      await customer.save();
+      res.redirect(`/admin/clients/${customer.id}?reset=1`);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.post('/admin/clients/:id/delete', async (req, res, next) => {
+  try {
+    await Customer.destroy({ where: { id: req.params.id } });
+    res.redirect('/admin/clients');
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ---------- Admin users ----------
 
 router.get('/admin/users', async (req, res, next) => {
@@ -662,7 +791,17 @@ router.get('/admin/analytics', async (req, res, next) => {
 
 // ---------- Pages ----------
 
-const PAGE_LABELS = { home: 'Home', about: 'About', bespoke: 'Bespoke', gallery: 'Gallery', contact: 'Contact' };
+const PAGE_LABELS = {
+  home: 'Home',
+  about: 'About',
+  bespoke: 'Bespoke',
+  gallery: 'Gallery',
+  contact: 'Contact',
+  terms: 'Terms of Service',
+  privacy: 'Privacy Policy',
+  'refund-policy': 'Refund & Return Policy',
+};
+const LEGAL_PAGE_SLUGS = new Set(['terms', 'privacy', 'refund-policy']);
 const PAGE_SLUGS = Object.keys(PAGE_LABELS);
 
 router.get('/admin/pages', async (req, res, next) => {
@@ -690,6 +829,7 @@ router.get('/admin/pages/:slug/edit', async (req, res, next) => {
       layout: 'layouts/admin',
       slug,
       label: PAGE_LABELS[slug],
+      isLegal: LEGAL_PAGE_SLUGS.has(slug),
       content: page ? page.content : {},
       saved: req.query.saved === '1',
       error: null,
@@ -713,6 +853,12 @@ router.post('/admin/pages/:slug/edit', async (req, res, next) => {
       eyebrow: (req.body.eyebrow || '').trim(),
       heading: (req.body.heading || '').trim(),
       intro: (req.body.intro || '').trim(),
+      ...(LEGAL_PAGE_SLUGS.has(slug)
+        ? {
+            lastUpdated: (req.body.lastUpdated || '').trim(),
+            body: req.body.body || '',
+          }
+        : {}),
     };
     await page.save();
 
@@ -731,6 +877,7 @@ router.post('/admin/pages/home/hero-video', (req, res, next) => {
           layout: 'layouts/admin',
           slug: 'home',
           label: 'Home',
+          isLegal: false,
           content: page ? page.content : {},
           saved: false,
           error: err.message,

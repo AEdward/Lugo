@@ -186,6 +186,61 @@ button.link-btn {
   justify-content: center;
 }
 
+.nav-dropdown { position: relative; }
+.dropdown-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-ink-soft);
+  font-size: 0.92rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dropdown-toggle:hover { color: var(--color-ink); }
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 14px);
+  right: 0;
+  background: white;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  min-width: 200px;
+  padding: 6px;
+  z-index: 20;
+}
+.dropdown-menu.open { display: block; }
+.dropdown-menu-wide { min-width: 300px; }
+.dropdown-menu a,
+.dropdown-logout {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 9px 12px;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  color: var(--color-ink-soft);
+  background: none;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+.dropdown-menu a:hover,
+.dropdown-logout:hover { background: var(--color-bg-alt); color: var(--color-ink); }
+.dropdown-menu a.active { color: var(--color-ink); font-weight: 600; }
+.dropdown-notification { border-bottom: 1px solid var(--color-line); }
+.dropdown-notification:last-of-type { border-bottom: none; }
+.dropdown-notification strong { display: block; font-size: 0.85rem; font-weight: 600; color: var(--color-ink); }
+.dropdown-notification span { font-size: 0.75rem; color: var(--color-ink-soft); }
+.dropdown-notification.unread strong::before { content: '\25CF '; color: var(--color-accent); font-size: 0.6rem; }
+.dropdown-empty { padding: 12px; color: var(--color-ink-soft); font-size: 0.85rem; }
+.dropdown-viewall { border-top: 1px solid var(--color-line); margin-top: 4px; text-align: center; font-weight: 600; }
+
 .nav-toggle { display: none; }
 
 @media (max-width: 860px) {
@@ -392,6 +447,7 @@ input:focus, select:focus, textarea:focus {
 }
 .alert-error { background: #fbeceb; color: var(--color-danger); border: 1px solid #f0cfcc; }
 .alert-success { background: #eaf1e9; color: var(--color-success); border: 1px solid #cfe0cd; }
+.alert-info { background: var(--color-bg-alt); color: var(--color-ink-soft); border: 1px solid var(--color-line); }
 
 /* ---------- Visual configurator (Store product page) ---------- */
 

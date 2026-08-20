@@ -35,6 +35,13 @@
             </span>
             <span><strong>ETB <%= (o.totalCents/100).toLocaleString() %></strong></span>
           </div>
+          <% if (o.paymentMethod === 'bank_transfer' && o.paymentStatus !== 'paid' && o.chapaTxRef) { %>
+            <div style="margin-top:12px;">
+              <a class="btn btn-sm btn-outline" href="/order/confirmation/<%= o.chapaTxRef %>">
+                <%= o.receiptStatus === 'awaiting_upload' ? 'Upload Receipt' : (o.receiptStatus === 'pending_review' ? 'View Receipt Status' : 'Re-upload Receipt') %>
+              </a>
+            </div>
+          <% } %>
         </div>
       <% }) %>
     <% } else { %>

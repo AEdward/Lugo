@@ -1,0 +1,75 @@
+<div class="admin-header">
+  <div>
+    <h1><%= customer.name %></h1>
+    <p style="color:var(--color-ink-soft);">Joined <%= new Date(customer.createdAt).toLocaleDateString() %></p>
+  </div>
+  <a class="btn btn-outline btn-sm" href="/admin/clients">&larr; Back to Clients</a>
+</div>
+
+<% if (reset) { %>
+  <div class="alert alert-success">Password reset — share the new password with the client directly.</div>
+<% } %>
+<% if (error) { %>
+  <div class="alert alert-error"><%= error %></div>
+<% } %>
+
+<div class="grid grid-2" style="align-items:start;">
+  <div class="panel">
+    <h3>Contact</h3>
+    <p><%= customer.email %><br><%= customer.phone || 'No phone on file' %></p>
+
+    <h3 style="margin-top:20px;">Bookings</h3>
+    <% if (bookings && bookings.length) { %>
+      <table class="simple">
+        <thead><tr><th>Date</th><th>Service</th><th>Status</th></tr></thead>
+        <tbody>
+          <% bookings.forEach(function(b) { %>
+            <tr>
+              <td><%= new Date(b.startsAt).toLocaleString([], {dateStyle:'medium', timeStyle:'short'}) %></td>
+              <td style="text-transform:capitalize;"><%= b.serviceType %></td>
+              <td><span class="badge badge-<%= b.status %>"><%= b.status %></span></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <p style="color:var(--color-ink-soft);">No bookings yet.</p>
+    <% } %>
+
+    <h3 style="margin-top:20px;">Orders</h3>
+    <% if (orders && orders.length) { %>
+      <table class="simple">
+        <thead><tr><th>Order #</th><th>Fabric</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody>
+          <% orders.forEach(function(o) { %>
+            <tr>
+              <td><a href="/admin/orders/<%= o.id %>"><%= o.orderNumber %></a></td>
+              <td><%= o.Fabric ? o.Fabric.name : '—' %></td>
+              <td>ETB <%= (o.totalCents/100).toLocaleString() %></td>
+              <td><span class="badge badge-<%= o.paymentStatus %>"><%= o.paymentStatus %></span></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <p style="color:var(--color-ink-soft);">No orders yet.</p>
+    <% } %>
+  </div>
+
+  <div class="panel">
+    <h3>Reset Password</h3>
+    <p style="color:var(--color-ink-soft); font-size:0.85rem; margin-bottom:12px;">Sets a new password for this client directly — share it with them yourself.</p>
+    <form method="POST" action="/admin/clients/<%= customer.id %>/reset-password">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field"><label for="password">New Password</label><input type="password" id="password" name="password" minlength="8" required></div>
+      <button class="btn btn-primary btn-sm" type="submit">Reset Password</button>
+    </form>
+
+    <h3 style="margin-top:24px;">Delete Account</h3>
+    <p style="color:var(--color-ink-soft); font-size:0.85rem; margin-bottom:12px;">Their bookings and orders stay on record but are no longer linked to an account.</p>
+    <form method="POST" action="/admin/clients/<%= customer.id %>/delete" onsubmit="return confirm('Delete this client account?');">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn btn-sm btn-danger" type="submit">Delete Client</button>
+    </form>
+  </div>
+</div>

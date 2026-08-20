@@ -48,7 +48,17 @@
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class="field"><label for="eyebrow">Eyebrow (small label above the heading)</label><input type="text" id="eyebrow" name="eyebrow" value="<%= content.eyebrow || '' %>"></div>
     <div class="field"><label for="heading">Heading</label><input type="text" id="heading" name="heading" value="<%= content.heading || '' %>"></div>
-    <div class="field"><label for="intro">Intro Text</label><textarea id="intro" name="intro"><%= content.intro || '' %></textarea></div>
+
+    <% if (isLegal) { %>
+      <div class="field"><label for="lastUpdated">Last Updated (shown at the top of the page)</label><input type="text" id="lastUpdated" name="lastUpdated" value="<%= content.lastUpdated || '' %>" placeholder="e.g. August 20, 2026"></div>
+      <div class="field">
+        <label for="body">Body (HTML)</label>
+        <p style="color:var(--color-ink-soft); font-size:0.82rem; margin-bottom:6px;">Full legal text as HTML — use &lt;h2&gt; for section headings and &lt;p&gt; for paragraphs, same as the rest of the page.</p>
+        <textarea id="body" name="body" rows="20" style="font-family:monospace; font-size:0.85rem;"><%= content.body || '' %></textarea>
+      </div>
+    <% } else { %>
+      <div class="field"><label for="intro">Intro Text</label><textarea id="intro" name="intro"><%= content.intro || '' %></textarea></div>
+    <% } %>
 
     <h3 style="margin:24px 0 16px;">SEO</h3>
     <div class="field">

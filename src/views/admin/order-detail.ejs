@@ -52,11 +52,56 @@
 
   <div class="panel">
     <h3>Payment</h3>
+    <p>Method: <span style="text-transform:capitalize;"><%= order.paymentMethod.replace('_', ' ') %></span></p>
     <p>Status: <span class="badge badge-<%= order.paymentStatus %>"><%= order.paymentStatus %></span></p>
     <p>Total: <strong>ETB <%= (order.totalCents/100).toLocaleString() %></strong></p>
-    <p style="font-size:0.8rem; color:var(--color-ink-soft); word-break:break-all;">Chapa ref: <%= order.chapaTxRef || '—' %></p>
+    <p style="font-size:0.8rem; color:var(--color-ink-soft); word-break:break-all;">Reference: <%= order.chapaTxRef || '—' %></p>
 
-    <h3>Fulfillment Status</h3>
+    <% if (order.paymentMethod === 'cash' && order.paymentStatus !== 'paid') { %>
+      <form method="POST" action="/admin/orders/<%= order.id %>/mark-cash-paid" style="margin-top:12px;">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button class="btn btn-primary btn-sm" type="submit">Mark Cash Received</button>
+      </form>
+    <% } %>
+
+    <% if (order.paymentMethod === 'bank_transfer') { %>
+      <h3 style="margin-top:20px;">Bank Transfer Receipt</h3>
+      <p>Receipt status: <span class="badge badge-<%= order.receiptStatus === 'paid' ? 'confirmed' : (order.receiptStatus === 'unpaid' || order.receiptStatus === 'invalid_receipt' ? 'rejected' : 'expired') %>"><%= order.receiptStatus.replace('_', ' ') %></span></p>
+
+      <% if (order.receiptUrl) { %>
+        <% if (order.receiptUrl.toLowerCase().endsWith('.pdf')) { %>
+          <a class="btn btn-sm btn-outline" href="<%= order.receiptUrl %>" target="_blank" rel="noopener">View Receipt (PDF)</a>
+        <% } else { %>
+          <a href="<%= order.receiptUrl %>" target="_blank" rel="noopener">
+            <img src="<%= order.receiptUrl %>" alt="Bank transfer receipt" style="max-width:260px; border-radius:6px; border:1px solid var(--color-line); display:block; margin:8px 0;">
+          </a>
+        <% } %>
+
+        <% if (order.paymentStatus !== 'paid') { %>
+          <div class="inline-actions" style="margin-top:10px;">
+            <form method="POST" action="/admin/orders/<%= order.id %>/receipt-status">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="hidden" name="receiptStatus" value="paid">
+              <button class="btn btn-sm btn-primary" type="submit">Mark Paid</button>
+            </form>
+            <form method="POST" action="/admin/orders/<%= order.id %>/receipt-status">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="hidden" name="receiptStatus" value="unpaid">
+              <button class="btn btn-sm btn-outline" type="submit">Mark Unpaid</button>
+            </form>
+            <form method="POST" action="/admin/orders/<%= order.id %>/receipt-status">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="hidden" name="receiptStatus" value="invalid_receipt">
+              <button class="btn btn-sm btn-danger" type="submit">No Valid Receipt</button>
+            </form>
+          </div>
+        <% } %>
+      <% } else { %>
+        <p style="color:var(--color-ink-soft);">Waiting for the customer to upload a receipt.</p>
+      <% } %>
+    <% } %>
+
+    <h3 style="margin-top:20px;">Fulfillment Status</h3>
     <form method="POST" action="/admin/orders/<%= order.id %>/status">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="field">

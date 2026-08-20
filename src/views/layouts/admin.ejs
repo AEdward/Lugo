@@ -27,6 +27,7 @@
           <a href="/admin/analytics" class="<%= currentPath.startsWith('/admin/analytics') ? 'active' : '' %>">Analytics</a>
           <a href="/admin/messages" class="<%= currentPath.startsWith('/admin/messages') ? 'active' : '' %>">Messages</a>
           <a href="/admin/notifications" class="<%= currentPath.startsWith('/admin/notifications') ? 'active' : '' %>">Notifications<% if (typeof unreadNotifications !== 'undefined' && unreadNotifications > 0) { %> <span class="badge badge-rejected"><%= unreadNotifications %></span><% } %></a>
+          <a href="/admin/clients" class="<%= currentPath.startsWith('/admin/clients') ? 'active' : '' %>">Clients</a>
           <a href="/admin/users" class="<%= currentPath.startsWith('/admin/users') ? 'active' : '' %>">Users</a>
           <a href="/admin/settings" class="<%= currentPath.startsWith('/admin/settings') ? 'active' : '' %>">Settings</a>
           <a href="/admin/health" class="<%= currentPath.startsWith('/admin/health') ? 'active' : '' %>">Site Health</a>

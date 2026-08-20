@@ -112,7 +112,8 @@ router.post('/account/logout', (req, res) => {
 
 router.get('/account', requireCustomer, async (req, res, next) => {
   try {
-    const [upcomingBooking, recentOrder] = await Promise.all([
+    const [customer, upcomingBooking, recentOrder] = await Promise.all([
+      Customer.findByPk(req.session.customerId),
       Booking.findOne({
         where: { customerId: req.session.customerId, status: 'confirmed', startsAt: { [Op.gte]: new Date() } },
         order: [['startsAt', 'ASC']],
@@ -124,6 +125,7 @@ router.get('/account', requireCustomer, async (req, res, next) => {
       title: 'My Account — Lugo Tailoring',
       upcomingBooking,
       recentOrder,
+      memberSince: customer.createdAt,
     });
   } catch (err) {
     next(err);

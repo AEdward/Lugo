@@ -18,13 +18,42 @@
       <li class="nav-cart">
         <a href="/cart">Cart<% if (typeof cartCount !== 'undefined' && cartCount > 0) { %><span class="cart-badge"><%= cartCount %></span><% } %></a>
       </li>
-      <li>
-        <% if (typeof currentCustomer !== 'undefined' && currentCustomer) { %>
-          <a href="/account" class="<%= currentPath && currentPath.startsWith('/account') ? 'active' : '' %>">Account</a>
-        <% } else { %>
-          <a href="/account/login" class="<%= currentPath && currentPath.startsWith('/account') ? 'active' : '' %>">Log In</a>
-        <% } %>
-      </li>
+      <% if (typeof currentCustomer !== 'undefined' && currentCustomer) { %>
+        <li class="nav-dropdown">
+          <button class="dropdown-toggle" type="button" aria-expanded="false">
+            Notifications
+            <% if (typeof unreadNotifications !== 'undefined' && unreadNotifications > 0) { %><span class="badge badge-rejected"><%= unreadNotifications %></span><% } %>
+          </button>
+          <div class="dropdown-menu dropdown-menu-wide">
+            <% if (typeof recentNotifications !== 'undefined' && recentNotifications.length) { %>
+              <% recentNotifications.forEach(function(n) { %>
+                <a class="dropdown-notification <%= n.readAt ? '' : 'unread' %>" href="/account/notifications#notif-<%= n.id %>">
+                  <strong><%= n.title %></strong>
+                  <span><%= new Date(n.createdAt).toLocaleDateString() %></span>
+                </a>
+              <% }) %>
+            <% } else { %>
+              <div class="dropdown-empty">No notifications yet.</div>
+            <% } %>
+            <a class="dropdown-viewall" href="/account/notifications">View All Notifications</a>
+          </div>
+        </li>
+        <li class="nav-dropdown">
+          <button class="dropdown-toggle" type="button" aria-expanded="false"><%= currentCustomer.name.split(' ')[0] %></button>
+          <div class="dropdown-menu">
+            <a href="/account" class="<%= currentPath === '/account' ? 'active' : '' %>">Profile</a>
+            <a href="/account/bookings" class="<%= currentPath === '/account/bookings' ? 'active' : '' %>">My Bookings</a>
+            <a href="/account/orders" class="<%= currentPath === '/account/orders' ? 'active' : '' %>">My Orders</a>
+            <a href="/account/settings" class="<%= currentPath === '/account/settings' ? 'active' : '' %>">Settings</a>
+            <form method="POST" action="/account/logout">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="dropdown-logout" type="submit">Log Out</button>
+            </form>
+          </div>
+        </li>
+      <% } else { %>
+        <li><a href="/account/login" class="<%= currentPath && currentPath.startsWith('/account') ? 'active' : '' %>">Log In</a></li>
+      <% } %>
     </ul>
   </nav>
 </header>

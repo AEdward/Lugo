@@ -109,11 +109,15 @@ function createApp() {
     next();
   });
   app.use(async (req, res, next) => {
+    res.locals.recentNotifications = [];
     try {
       if (req.session.adminUserId) {
         res.locals.unreadNotifications = await notificationService.unreadAdminCount();
       } else if (req.session.customerId) {
         res.locals.unreadNotifications = await notificationService.unreadCustomerCount(req.session.customerId);
+        // Only the customer-facing nav shows a dropdown preview; admin's
+        // sidebar links straight to the full notifications page.
+        res.locals.recentNotifications = await notificationService.listForCustomer(req.session.customerId, 5);
       } else {
         res.locals.unreadNotifications = 0;
       }
