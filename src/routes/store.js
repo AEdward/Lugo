@@ -6,6 +6,7 @@ const { Fabric, DesignOption, Order } = require('../models');
 const cartService = require('../services/cartService');
 const chapaService = require('../services/chapaService');
 const notifications = require('../services/notifications');
+const notificationService = require('../services/notificationService');
 const { checkoutLimiter } = require('../middleware/rateLimit');
 
 const router = express.Router();
@@ -263,6 +264,29 @@ async function settleOrdersForTxRef(txRef) {
     if (affectedCount > 0) {
       notifications.sendOrdersPaid(paidOrders).catch(() => {});
       notifications.notifyAdminNewOrders(paidOrders).catch(() => {});
+
+      const totalCents = paidOrders.reduce((sum, o) => sum + o.totalCents, 0);
+      notificationService
+        .notifyAdmin({
+          type: 'order_paid',
+          title: `New paid order — ${paidOrders[0].customerName}`,
+          body: `${paidOrders.length} item(s), ETB ${(totalCents / 100).toLocaleString()}`,
+          link: `/admin/orders/${paidOrders[0].id}`,
+        })
+        .catch(() => {});
+
+      // All items from one checkout share the same customerId (or all guest).
+      const customerId = paidOrders[0].customerId;
+      if (customerId) {
+        notificationService
+          .notifyCustomer(customerId, {
+            type: 'order_paid',
+            title: 'Payment received',
+            body: `Your order for ${paidOrders.length} item(s) is confirmed and moving into production.`,
+            link: '/account/orders',
+          })
+          .catch(() => {});
+      }
     }
     return paidOrders;
   }

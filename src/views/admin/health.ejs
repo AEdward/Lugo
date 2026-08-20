@@ -1,0 +1,58 @@
+<div class="admin-header">
+  <div>
+    <h1>Site Health</h1>
+    <p style="color:var(--color-ink-soft);">A quick read on whether things are working and configured.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <h3 style="margin-bottom:16px;">System</h3>
+  <table class="simple">
+    <tbody>
+      <tr>
+        <td>Database</td>
+        <td><span class="badge <%= health.database.ok ? 'badge-confirmed' : 'badge-rejected' %>"><%= health.database.ok ? 'Connected' : 'Error' %></span> <%= health.database.ok ? '' : health.database.message %></td>
+      </tr>
+      <tr><td>Environment</td><td><%= health.env %></td></tr>
+      <tr><td>App Version</td><td><%= health.appVersion %></td></tr>
+      <tr><td>Node Version</td><td><%= health.nodeVersion %></td></tr>
+      <tr><td>Server Uptime</td><td><%= health.uptime %></td></tr>
+      <tr><td>Memory Usage</td><td><%= health.memory %></td></tr>
+      <tr><td>Uploads Folder Size</td><td><%= health.uploadsSize %></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="panel">
+  <h3 style="margin-bottom:16px;">Configuration</h3>
+  <table class="simple">
+    <tbody>
+      <tr><td>Email (SMTP)</td><td><span class="badge <%= health.smtpConfigured ? 'badge-confirmed' : 'badge-expired' %>"><%= health.smtpConfigured ? 'Configured' : 'Not configured' %></span></td></tr>
+      <tr><td>Payments (Chapa)</td><td><span class="badge <%= health.chapaConfigured ? 'badge-confirmed' : 'badge-expired' %>"><%= health.chapaConfigured ? 'Configured' : 'Not configured' %></span></td></tr>
+      <tr><td>Analytics (Google)</td><td><span class="badge <%= health.analyticsConfigured ? 'badge-confirmed' : 'badge-expired' %>"><%= health.analyticsConfigured ? 'Configured' : 'Not configured' %></span></td></tr>
+      <tr><td>Automatic Backups</td><td><span class="badge <%= health.backupEnabled ? 'badge-confirmed' : 'badge-expired' %>"><%= health.backupEnabled ? 'Enabled' : 'Disabled (run npm run backup manually or via an external scheduler)' %></span></td></tr>
+      <tr>
+        <td>Latest Backup</td>
+        <td>
+          <% if (health.latestBackup) { %>
+            <%= health.latestBackup.name %> — <%= health.latestBackup.date.toLocaleString() %>
+          <% } else { %>
+            <span class="badge badge-rejected">None found</span>
+          <% } %>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="panel">
+  <h3 style="margin-bottom:16px;">At a Glance</h3>
+  <table class="simple">
+    <tbody>
+      <tr><td>Pending Bookings</td><td><%= health.pendingBookings %></td></tr>
+      <tr><td>Unread Messages</td><td><%= health.unreadMessages %></td></tr>
+      <tr><td>Total Customers</td><td><%= health.totalCustomers %></td></tr>
+      <tr><td>Total Orders</td><td><%= health.totalOrders %></td></tr>
+    </tbody>
+  </table>
+</div>

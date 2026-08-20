@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const { GalleryImage, ContactMessage, Page, Fabric } = require('../models');
 const settingsService = require('../services/settingsService');
 const notifications = require('../services/notifications');
+const notificationService = require('../services/notificationService');
 const { formLimiter } = require('../middleware/rateLimit');
 const { buildPageMeta } = require('../services/pageService');
 
@@ -137,6 +138,14 @@ router.post(
       const { name, email, phone, message } = req.body;
       const contactMessage = await ContactMessage.create({ name, email, phone, message });
       notifications.notifyAdminNewMessage(contactMessage).catch(() => {});
+      notificationService
+        .notifyAdmin({
+          type: 'message_new',
+          title: `New message — ${contactMessage.name}`,
+          body: contactMessage.message.slice(0, 140),
+          link: '/admin/messages',
+        })
+        .catch(() => {});
       res.redirect('/contact?sent=1');
     } catch (err) {
       next(err);

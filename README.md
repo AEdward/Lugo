@@ -12,6 +12,9 @@ Website for Lugo Tailoring — a custom luxury suit tailoring studio. Built with
 - **Pages** (`/admin/pages`) — edit the eyebrow/heading/intro copy and SEO title/description for Home, About, Bespoke, Gallery, and Contact; the homepage hero video also lives here now (`/admin/pages/home/edit`), not under Settings.
 - **Site Settings** (`/admin/settings`) — site name, contact email/phone/address, and social links, shown across the footer/contact page.
 - **SEO** — per-page meta title/description (editable via Pages) plus Open Graph/Twitter card tags, `/sitemap.xml`, and `/robots.txt`.
+- **Self-hosted analytics** (`/admin/analytics`) — page views, unique visitors, top pages, and top referrers, tracked entirely in our own database. No third party (Google or otherwise) ever sees this traffic, and no raw IP address is stored.
+- **In-app notifications** — admin and customers each get a notification bell (with unread badge) for events like new bookings/orders/messages, booking approval/rejection, and order status changes — separate from the email notifications, and each side only ever sees its own.
+- **Site Health** (`/admin/health`) — a one-page diagnostic: database connectivity, uptime/memory, which optional integrations (SMTP, Chapa, analytics, backups) are configured, latest backup, and a few at-a-glance business counts.
 
 ## Tech stack
 

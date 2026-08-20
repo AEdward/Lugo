@@ -9,7 +9,9 @@ const expressLayouts = require('express-ejs-layouts');
 const { attachAdminLocals, attachCustomerLocals } = require('./middleware/auth');
 const { doubleCsrfProtection, attachCsrfToken, invalidCsrfTokenError } = require('./middleware/csrf');
 const { generalLimiter } = require('./middleware/rateLimit');
+const trackPageView = require('./middleware/analyticsTracker');
 const settingsService = require('./services/settingsService');
+const notificationService = require('./services/notificationService');
 const publicRoutes = require('./routes/public');
 const bookingRoutes = require('./routes/booking');
 const storeRoutes = require('./routes/store');
@@ -51,6 +53,7 @@ function createApp() {
   app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
   app.use(generalLimiter);
+  app.use(trackPageView);
 
   // Set before session/auth middleware so error pages can render even if
   // something downstream (e.g. the session store) fails.
@@ -103,6 +106,20 @@ function createApp() {
     res.locals.cartCount = (req.session.cart || []).length;
     res.locals.flashError = req.session.flashError || null;
     delete req.session.flashError;
+    next();
+  });
+  app.use(async (req, res, next) => {
+    try {
+      if (req.session.adminUserId) {
+        res.locals.unreadNotifications = await notificationService.unreadAdminCount();
+      } else if (req.session.customerId) {
+        res.locals.unreadNotifications = await notificationService.unreadCustomerCount(req.session.customerId);
+      } else {
+        res.locals.unreadNotifications = 0;
+      }
+    } catch (err) {
+      res.locals.unreadNotifications = 0;
+    }
     next();
   });
   app.use(async (req, res, next) => {

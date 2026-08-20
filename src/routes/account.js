@@ -5,6 +5,7 @@ const { Op } = require('sequelize');
 const { Customer, Booking, Order, Fabric } = require('../models');
 const { requireCustomer } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/rateLimit');
+const notificationService = require('../services/notificationService');
 
 const router = express.Router();
 
@@ -149,6 +150,35 @@ router.get('/account/orders', requireCustomer, async (req, res, next) => {
       include: [Fabric],
     });
     res.render('account/orders', { title: 'My Orders — Lugo Tailoring', orders });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------- Notifications ----------
+
+router.get('/account/notifications', requireCustomer, async (req, res, next) => {
+  try {
+    const items = await notificationService.listForCustomer(req.session.customerId, 100);
+    res.render('account/notifications', { title: 'Notifications — Lugo Tailoring', items });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/account/notifications/:id/read', requireCustomer, async (req, res, next) => {
+  try {
+    await notificationService.markRead(req.params.id, { audience: 'customer', customerId: req.session.customerId });
+    res.redirect('/account/notifications');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/account/notifications/read-all', requireCustomer, async (req, res, next) => {
+  try {
+    await notificationService.markAllReadForCustomer(req.session.customerId);
+    res.redirect('/account/notifications');
   } catch (err) {
     next(err);
   }

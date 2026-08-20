@@ -1,0 +1,76 @@
+<div class="admin-header">
+  <div>
+    <h1>Analytics</h1>
+    <p style="color:var(--color-ink-soft);">Self-hosted page-view analytics — no third party ever sees this traffic.</p>
+  </div>
+</div>
+
+<div class="stat-grid" style="grid-template-columns: repeat(4, 1fr);">
+  <div class="stat-card">
+    <div class="num"><%= summary.today %></div>
+    <div class="label">Views today</div>
+  </div>
+  <div class="stat-card">
+    <div class="num"><%= summary.last7 %></div>
+    <div class="label">Views, last 7 days</div>
+  </div>
+  <div class="stat-card">
+    <div class="num"><%= summary.last30 %></div>
+    <div class="label">Views, last 30 days</div>
+  </div>
+  <div class="stat-card">
+    <div class="num"><%= summary.uniqueVisitors30d %></div>
+    <div class="label">Unique visitors, last 30 days</div>
+  </div>
+</div>
+
+<div class="panel">
+  <h3 style="margin-bottom:16px;">Views per Day (last 14 days)</h3>
+  <div style="display:flex; align-items:flex-end; gap:6px; height:120px;">
+    <% summary.dailySeries.forEach(function(d) { %>
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end;" title="<%= d.date %>: <%= d.count %> views">
+        <span style="font-size:0.7rem; color:var(--color-ink-soft);"><%= d.count %></span>
+        <div style="width:100%; background:var(--color-accent); border-radius:3px 3px 0 0; height:<%= Math.round((d.count / summary.maxDaily) * 90) %>px; min-height:2px;"></div>
+      </div>
+    <% }) %>
+  </div>
+  <div style="display:flex; gap:6px; margin-top:6px;">
+    <% summary.dailySeries.forEach(function(d) { %>
+      <div style="flex:1; text-align:center; font-size:0.65rem; color:var(--color-ink-soft);"><%= d.date.slice(5) %></div>
+    <% }) %>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <div class="panel">
+    <h3 style="margin-bottom:16px;">Top Pages (last 30 days)</h3>
+    <% if (summary.topPages.length) { %>
+      <table class="simple">
+        <thead><tr><th>Page</th><th>Views</th></tr></thead>
+        <tbody>
+          <% summary.topPages.forEach(function(p) { %>
+            <tr><td><%= p.path %></td><td><%= p.count %></td></tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <p style="color:var(--color-ink-soft);">No page views recorded yet.</p>
+    <% } %>
+  </div>
+
+  <div class="panel">
+    <h3 style="margin-bottom:16px;">Top Referrers (last 30 days)</h3>
+    <% if (summary.topReferrers.length) { %>
+      <table class="simple">
+        <thead><tr><th>Source</th><th>Views</th></tr></thead>
+        <tbody>
+          <% summary.topReferrers.forEach(function(r) { %>
+            <tr><td><%= r.host %></td><td><%= r.count %></td></tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <p style="color:var(--color-ink-soft);">No external referrers recorded yet — most visits are direct.</p>
+    <% } %>
+  </div>
+</div>

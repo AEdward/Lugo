@@ -4,6 +4,7 @@ const { Booking } = require('../models');
 const { getAvailabilityForDate, assertSlotIsFree } = require('../services/availabilityService');
 const bookingConfig = require('../config/booking');
 const notifications = require('../services/notifications');
+const notificationService = require('../services/notificationService');
 const { formLimiter } = require('../middleware/rateLimit');
 
 const router = express.Router();
@@ -100,6 +101,22 @@ router.post(
 
       notifications.sendBookingSubmitted(booking).catch(() => {});
       notifications.notifyAdminNewBooking(booking).catch(() => {});
+      notificationService
+        .notifyAdmin({
+          type: 'booking_new',
+          title: `New booking request — ${booking.customerName}`,
+          body: `${booking.serviceType} on ${new Date(booking.startsAt).toLocaleString()}`,
+          link: '/admin/bookings',
+        })
+        .catch(() => {});
+      notificationService
+        .notifyCustomer(booking.customerId, {
+          type: 'booking_submitted',
+          title: 'Booking request received',
+          body: `Your ${booking.serviceType} request for ${new Date(booking.startsAt).toLocaleString()} is awaiting approval.`,
+          link: '/account/bookings',
+        })
+        .catch(() => {});
 
       res.redirect('/booking?submitted=1');
     } catch (err) {

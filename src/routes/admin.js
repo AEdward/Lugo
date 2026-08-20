@@ -12,6 +12,9 @@ const videoUpload = require('../middleware/videoUpload');
 const bookingConfig = require('../config/booking');
 const settingsService = require('../services/settingsService');
 const notifications = require('../services/notifications');
+const notificationService = require('../services/notificationService');
+const analyticsService = require('../services/analyticsService');
+const healthService = require('../services/healthService');
 
 const router = express.Router();
 
@@ -96,6 +99,14 @@ router.post('/admin/bookings/:id/approve', async (req, res, next) => {
     booking.holdExpiresAt = null;
     await booking.save();
     notifications.sendBookingApproved(booking).catch(() => {});
+    notificationService
+      .notifyCustomer(booking.customerId, {
+        type: 'booking_approved',
+        title: 'Appointment confirmed',
+        body: `Your ${booking.serviceType} on ${new Date(booking.startsAt).toLocaleString()} is confirmed.`,
+        link: '/account/bookings',
+      })
+      .catch(() => {});
     res.redirect('/admin/bookings');
   } catch (err) {
     next(err);
@@ -110,6 +121,14 @@ router.post('/admin/bookings/:id/reject', async (req, res, next) => {
       booking.holdExpiresAt = null;
       await booking.save();
       notifications.sendBookingRejected(booking).catch(() => {});
+      notificationService
+        .notifyCustomer(booking.customerId, {
+          type: 'booking_rejected',
+          title: 'Appointment request declined',
+          body: `We're unable to confirm your ${booking.serviceType} request for ${new Date(booking.startsAt).toLocaleString()}.`,
+          link: '/account/bookings',
+        })
+        .catch(() => {});
     }
     res.redirect('/admin/bookings');
   } catch (err) {
@@ -162,6 +181,14 @@ router.post('/admin/orders/:id/status', async (req, res, next) => {
       order.status = req.body.status;
       await order.save();
       notifications.sendOrderStatusChanged(order).catch(() => {});
+      notificationService
+        .notifyCustomer(order.customerId, {
+          type: 'order_status',
+          title: `Order ${order.orderNumber} updated`,
+          body: `Your order status is now: ${order.status.replace(/_/g, ' ')}.`,
+          link: '/account/orders',
+        })
+        .catch(() => {});
     }
     res.redirect(`/admin/orders/${req.params.id}`);
   } catch (err) {
@@ -577,6 +604,57 @@ router.post('/admin/users/:id/delete', async (req, res, next) => {
 
     await User.destroy({ where: { id: targetId } });
     res.redirect('/admin/users');
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------- Site health ----------
+
+router.get('/admin/health', async (req, res, next) => {
+  try {
+    const health = await healthService.getHealth();
+    res.render('admin/health', { title: 'Site Health — Admin', layout: 'layouts/admin', health });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------- Notifications ----------
+
+router.get('/admin/notifications', async (req, res, next) => {
+  try {
+    const items = await notificationService.listForAdmin(100);
+    res.render('admin/notifications', { title: 'Notifications — Admin', layout: 'layouts/admin', items });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/admin/notifications/:id/read', async (req, res, next) => {
+  try {
+    await notificationService.markRead(req.params.id, { audience: 'admin' });
+    res.redirect('/admin/notifications');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/admin/notifications/read-all', async (req, res, next) => {
+  try {
+    await notificationService.markAllReadForAdmin();
+    res.redirect('/admin/notifications');
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------- Analytics ----------
+
+router.get('/admin/analytics', async (req, res, next) => {
+  try {
+    const summary = await analyticsService.getSummary();
+    res.render('admin/analytics', { title: 'Analytics — Admin', layout: 'layouts/admin', summary });
   } catch (err) {
     next(err);
   }
