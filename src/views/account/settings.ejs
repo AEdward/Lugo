@@ -1,0 +1,59 @@
+<section class="page-header">
+  <span class="eyebrow">My Account</span>
+  <h1>Settings</h1>
+</section>
+
+<section class="section" style="padding-top:24px;">
+  <div class="container">
+    <%- include('../partials/account-nav') %>
+
+    <div class="grid grid-2" style="align-items:start;">
+      <div class="panel">
+        <h3 style="margin-bottom:16px;">Profile</h3>
+        <% if (profileSaved) { %><div class="alert alert-success">Profile updated.</div><% } %>
+        <% if (profileErrors && profileErrors.length) { %><div class="alert alert-error"><%= profileErrors[0].msg %></div><% } %>
+        <form method="POST" action="/account/settings">
+          <div class="field">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" value="<%= currentCustomer.name %>" required>
+          </div>
+          <div class="field">
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" name="phone" value="<%= currentCustomer.phone || '' %>">
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" value="<%= currentCustomer.email %>" disabled>
+            <p class="hint">Contact us to change the email on your account.</p>
+          </div>
+          <button class="btn btn-primary" type="submit">Save Profile</button>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h3 style="margin-bottom:16px;">Change Password</h3>
+        <% if (passwordSaved) { %><div class="alert alert-success">Password updated.</div><% } %>
+        <% if (passwordErrors && passwordErrors.length) { %><div class="alert alert-error"><%= passwordErrors[0].msg %></div><% } %>
+        <form method="POST" action="/account/settings/password">
+          <div class="field">
+            <label for="currentPassword">Current Password</label>
+            <input type="password" id="currentPassword" name="currentPassword" required>
+          </div>
+          <div class="field">
+            <label for="newPassword">New Password</label>
+            <input type="password" id="newPassword" name="newPassword" minlength="8" required>
+          </div>
+          <div class="field">
+            <label for="confirmNewPassword">Confirm New Password</label>
+            <input type="password" id="confirmNewPassword" name="confirmNewPassword" minlength="8" required>
+          </div>
+          <button class="btn btn-primary" type="submit">Update Password</button>
+        </form>
+      </div>
+    </div>
+
+    <form method="POST" action="/account/logout" style="margin-top:24px;">
+      <button class="btn btn-outline" type="submit">Log Out</button>
+    </form>
+  </div>
+</section>

@@ -17,6 +17,9 @@ router.get('/booking', (req, res) => {
     title: 'Book an Appointment — Lugo Tailoring',
     todayDateStr: todayDateStr(),
     submitted: req.query.submitted === '1',
+    values: req.session.customer
+      ? { customerName: req.session.customer.name, email: req.session.customer.email, phone: req.session.customer.phone || '' }
+      : {},
   });
 });
 
@@ -81,6 +84,7 @@ router.post(
       const holdExpiresAt = new Date(Date.now() + bookingConfig.holdHours * 60 * 60 * 1000);
 
       const booking = await Booking.create({
+        customerId: req.session.customerId || null,
         customerName: req.body.customerName,
         email: req.body.email,
         phone: req.body.phone,

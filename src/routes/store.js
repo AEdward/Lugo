@@ -124,7 +124,9 @@ router.get('/checkout', async (req, res, next) => {
       title: 'Checkout — Lugo Tailoring',
       ...details,
       errors: [],
-      values: {},
+      values: req.session.customer
+        ? { customerName: req.session.customer.name, email: req.session.customer.email, phone: req.session.customer.phone || '' }
+        : {},
     });
   } catch (err) {
     next(err);
@@ -160,6 +162,7 @@ router.post(
       const createdOrders = await Order.bulkCreate(
         details.items.map((item) => ({
           orderNumber: `LT-${Date.now()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`,
+          customerId: req.session.customerId || null,
           customerName,
           email,
           phone,

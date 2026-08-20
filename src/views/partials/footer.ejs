@@ -27,7 +27,15 @@
     </div>
     <div class="footer-bottom">
       <span>&copy; <%= new Date().getFullYear() %> Lugo Tailoring. All rights reserved.</span>
-      <span><a href="/admin/login" style="color:#8f867e;">Admin</a></span>
+      <span>
+        <% if (typeof currentCustomer !== 'undefined' && currentCustomer) { %>
+          <a href="/account" style="color:#8f867e;">My Account</a>
+        <% } else { %>
+          <a href="/account/login" style="color:#8f867e;">My Account</a>
+        <% } %>
+        &nbsp;&middot;&nbsp;
+        <a href="/admin/login" style="color:#8f867e;">Admin</a>
+      </span>
     </div>
   </div>
 </footer>

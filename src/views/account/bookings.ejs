@@ -1,0 +1,32 @@
+<section class="page-header">
+  <span class="eyebrow">My Account</span>
+  <h1>My Bookings</h1>
+</section>
+
+<section class="section" style="padding-top:24px;">
+  <div class="container">
+    <%- include('../partials/account-nav') %>
+
+    <div class="panel">
+      <% if (bookings && bookings.length) { %>
+        <table class="simple">
+          <thead><tr><th>Date &amp; Time</th><th>Service</th><th>Status</th></tr></thead>
+          <tbody>
+            <% bookings.forEach(function(b) { %>
+              <tr>
+                <td><%= new Date(b.startsAt).toLocaleString([], {dateStyle:'medium', timeStyle:'short'}) %></td>
+                <td style="text-transform:capitalize;"><%= b.serviceType %></td>
+                <td><span class="badge badge-<%= b.status %>"><%= b.status %></span></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } else { %>
+        <div class="empty-state">
+          <p>You haven't booked an appointment yet.</p>
+          <a class="btn btn-primary" href="/booking">Book a Fitting</a>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</section>

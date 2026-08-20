@@ -1,0 +1,41 @@
+<section class="page-header">
+  <span class="eyebrow">Join Lugo Tailoring</span>
+  <h1>Create Your Account</h1>
+  <p>Save your measurements, track bookings, and check on custom orders — all in one place.</p>
+</section>
+
+<section class="section" style="padding-top:24px;">
+  <div class="container" style="max-width:480px;">
+    <div class="form-card">
+      <% if (errors && errors.length) { %>
+        <div class="alert alert-error"><%= errors[0].msg %></div>
+      <% } %>
+      <form method="POST" action="/account/register">
+        <div class="field">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" name="name" value="<%= values.name || '' %>" required>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" value="<%= values.email || '' %>" required>
+        </div>
+        <div class="field">
+          <label for="phone">Phone (optional)</label>
+          <input type="tel" id="phone" name="phone" value="<%= values.phone || '' %>">
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" minlength="8" required>
+          </div>
+          <div class="field">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" minlength="8" required>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Create Account</button>
+      </form>
+      <p class="hint" style="margin-top:16px; text-align:center;">Already have an account? <a href="/account/login">Log in</a></p>
+    </div>
+  </div>
+</section>

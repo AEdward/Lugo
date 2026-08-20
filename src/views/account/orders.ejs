@@ -1,0 +1,49 @@
+<section class="page-header">
+  <span class="eyebrow">My Account</span>
+  <h1>My Orders</h1>
+</section>
+
+<section class="section" style="padding-top:24px;">
+  <div class="container">
+    <%- include('../partials/account-nav') %>
+
+    <% if (orders && orders.length) { %>
+      <% orders.forEach(function(o) { %>
+        <div class="panel">
+          <div class="build-summary-fabric" style="margin-bottom:12px;">
+            <% if (o.Fabric) { %><img src="<%= o.Fabric.imageUrl %>" alt="<%= o.Fabric.name %>"><% } %>
+            <div>
+              <strong><%= o.Fabric ? o.Fabric.name : 'Custom Suit' %></strong>
+              <span><%= o.orderNumber %> &middot; <%= new Date(o.createdAt).toLocaleDateString() %></span>
+            </div>
+          </div>
+          <div class="cart-item-options" style="margin-bottom:14px;">
+            <% (o.selectedOptions || []).forEach(function(opt) { %>
+              <span class="cart-item-option" title="<%= opt.name %>">
+                <% if (opt.imageUrl) { %>
+                  <img src="<%= opt.imageUrl %>" alt="<%= opt.name %>">
+                <% } else { %>
+                  <span class="option-card-thumb-placeholder"><%= opt.name.charAt(0) %></span>
+                <% } %>
+              </span>
+            <% }) %>
+          </div>
+          <div class="summary-row" style="margin-bottom:0;">
+            <span>
+              <span class="badge badge-<%= o.paymentStatus %>"><%= o.paymentStatus %></span>
+              <span class="badge badge-confirmed"><%= o.status %></span>
+            </span>
+            <span><strong>ETB <%= (o.totalCents/100).toLocaleString() %></strong></span>
+          </div>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <div class="panel">
+        <div class="empty-state">
+          <p>You haven't placed a custom order yet.</p>
+          <a class="btn btn-primary" href="/store">Design Your Suit</a>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</section>

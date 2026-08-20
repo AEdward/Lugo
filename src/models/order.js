@@ -2,6 +2,9 @@ module.exports = (sequelize, DataTypes) => {
   const Order = sequelize.define('Order', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     orderNumber: { type: DataTypes.STRING, allowNull: false, unique: true },
+    // Nullable — checkout doesn't require an account (guest checkout stays
+    // fully supported); set when a logged-in customer places the order.
+    customerId: { type: DataTypes.INTEGER, allowNull: true },
     customerName: { type: DataTypes.STRING, allowNull: false },
     email: { type: DataTypes.STRING, allowNull: false, validate: { isEmail: true } },
     phone: { type: DataTypes.STRING, allowNull: false },
@@ -70,6 +73,7 @@ module.exports = (sequelize, DataTypes) => {
 
   Order.associate = (models) => {
     Order.belongsTo(models.Fabric, { foreignKey: 'fabricId' });
+    Order.belongsTo(models.Customer, { foreignKey: 'customerId' });
   };
 
   return Order;

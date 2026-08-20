@@ -1,0 +1,34 @@
+<section class="page-header">
+  <span class="eyebrow">My Account</span>
+  <h1>Welcome back, <%= currentCustomer.name %></h1>
+</section>
+
+<section class="section" style="padding-top:24px;">
+  <div class="container">
+    <%- include('../partials/account-nav') %>
+
+    <div class="grid grid-2">
+      <div class="panel">
+        <h3 style="margin-bottom:12px;">Upcoming Appointment</h3>
+        <% if (upcomingBooking) { %>
+          <p style="margin-bottom:4px; text-transform:capitalize;"><strong><%= upcomingBooking.serviceType %></strong></p>
+          <p style="color:var(--color-ink-soft);"><%= new Date(upcomingBooking.startsAt).toLocaleString([], {dateStyle:'medium', timeStyle:'short'}) %></p>
+        <% } else { %>
+          <p style="color:var(--color-ink-soft); margin-bottom:16px;">No upcoming confirmed appointments.</p>
+          <a class="btn btn-outline btn-sm" href="/booking">Book a Fitting</a>
+        <% } %>
+      </div>
+
+      <div class="panel">
+        <h3 style="margin-bottom:12px;">Most Recent Order</h3>
+        <% if (recentOrder) { %>
+          <p style="margin-bottom:4px;"><strong><%= recentOrder.orderNumber %></strong><% if (recentOrder.Fabric) { %> — <%= recentOrder.Fabric.name %><% } %></p>
+          <p style="color:var(--color-ink-soft);">Status: <span class="badge badge-<%= recentOrder.paymentStatus %>"><%= recentOrder.status %></span></p>
+        <% } else { %>
+          <p style="color:var(--color-ink-soft); margin-bottom:16px;">No orders yet.</p>
+          <a class="btn btn-outline btn-sm" href="/store">Design Your Suit</a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</section>

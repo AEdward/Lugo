@@ -1,0 +1,26 @@
+<section class="page-header">
+  <span class="eyebrow">Welcome Back</span>
+  <h1>Log In</h1>
+</section>
+
+<section class="section" style="padding-top:24px;">
+  <div class="container" style="max-width:420px;">
+    <div class="form-card">
+      <% if (error) { %>
+        <div class="alert alert-error"><%= error %></div>
+      <% } %>
+      <form method="POST" action="/account/login">
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required autofocus>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Log In</button>
+      </form>
+      <p class="hint" style="margin-top:16px; text-align:center;">Don't have an account? <a href="/account/register">Create one</a></p>
+    </div>
+  </div>
+</section>

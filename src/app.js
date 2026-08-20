@@ -5,11 +5,12 @@ const express = require('express');
 const session = require('express-session');
 const expressLayouts = require('express-ejs-layouts');
 
-const { attachAdminLocals } = require('./middleware/auth');
+const { attachAdminLocals, attachCustomerLocals } = require('./middleware/auth');
 const publicRoutes = require('./routes/public');
 const bookingRoutes = require('./routes/booking');
 const storeRoutes = require('./routes/store');
 const authRoutes = require('./routes/auth');
+const accountRoutes = require('./routes/account');
 const adminRoutes = require('./routes/admin');
 
 function buildSessionStore() {
@@ -50,6 +51,7 @@ function createApp() {
     res.locals.currentPath = req.path;
     res.locals.cartCount = 0;
     res.locals.currentAdmin = null;
+    res.locals.currentCustomer = null;
     res.locals.flashError = null;
     next();
   });
@@ -69,6 +71,7 @@ function createApp() {
   );
 
   app.use(attachAdminLocals);
+  app.use(attachCustomerLocals);
   app.use((req, res, next) => {
     res.locals.cartCount = (req.session.cart || []).length;
     res.locals.flashError = req.session.flashError || null;
@@ -80,6 +83,7 @@ function createApp() {
   app.use(bookingRoutes);
   app.use(storeRoutes);
   app.use(authRoutes);
+  app.use(accountRoutes);
   app.use(adminRoutes);
 
   app.use((req, res) => {
