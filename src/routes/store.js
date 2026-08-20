@@ -1,9 +1,11 @@
 const express = require('express');
 const crypto = require('crypto');
+const { Op } = require('sequelize');
 const { body, validationResult } = require('express-validator');
 const { Fabric, DesignOption, Order } = require('../models');
 const cartService = require('../services/cartService');
 const chapaService = require('../services/chapaService');
+const notifications = require('../services/notifications');
 
 const router = express.Router();
 
@@ -245,11 +247,19 @@ async function settleOrdersForTxRef(txRef) {
   const paid = verification.status === 'success' && verification.data?.status === 'success';
 
   if (paid) {
-    await Order.update(
+    // The webhook and the customer's return-redirect can both reach this
+    // around the same time — only the request that actually flips the row
+    // (not already 'paid') should send notifications, or a race sends two.
+    const [affectedCount] = await Order.update(
       { paymentStatus: 'paid', status: 'paid' },
-      { where: { chapaTxRef: txRef } }
+      { where: { chapaTxRef: txRef, paymentStatus: { [Op.ne]: 'paid' } } }
     );
-    return Order.findAll({ where: { chapaTxRef: txRef }, include: [Fabric] });
+    const paidOrders = await Order.findAll({ where: { chapaTxRef: txRef }, include: [Fabric] });
+    if (affectedCount > 0) {
+      notifications.sendOrdersPaid(paidOrders).catch(() => {});
+      notifications.notifyAdminNewOrders(paidOrders).catch(() => {});
+    }
+    return paidOrders;
   }
 
   return orders;

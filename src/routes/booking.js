@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const { Booking } = require('../models');
 const { getAvailabilityForDate, assertSlotIsFree } = require('../services/availabilityService');
 const bookingConfig = require('../config/booking');
+const notifications = require('../services/notifications');
 
 const router = express.Router();
 
@@ -79,7 +80,7 @@ router.post(
 
       const holdExpiresAt = new Date(Date.now() + bookingConfig.holdHours * 60 * 60 * 1000);
 
-      await Booking.create({
+      const booking = await Booking.create({
         customerName: req.body.customerName,
         email: req.body.email,
         phone: req.body.phone,
@@ -90,6 +91,9 @@ router.post(
         status: 'pending',
         holdExpiresAt,
       });
+
+      notifications.sendBookingSubmitted(booking).catch(() => {});
+      notifications.notifyAdminNewBooking(booking).catch(() => {});
 
       res.redirect('/booking?submitted=1');
     } catch (err) {

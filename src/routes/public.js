@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { GalleryImage, ContactMessage } = require('../models');
 const settingsService = require('../services/settingsService');
+const notifications = require('../services/notifications');
 
 const router = express.Router();
 
@@ -64,7 +65,8 @@ router.post(
 
     try {
       const { name, email, phone, message } = req.body;
-      await ContactMessage.create({ name, email, phone, message });
+      const contactMessage = await ContactMessage.create({ name, email, phone, message });
+      notifications.notifyAdminNewMessage(contactMessage).catch(() => {});
       res.redirect('/contact?sent=1');
     } catch (err) {
       next(err);

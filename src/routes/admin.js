@@ -8,6 +8,7 @@ const upload = require('../middleware/upload');
 const videoUpload = require('../middleware/videoUpload');
 const bookingConfig = require('../config/booking');
 const settingsService = require('../services/settingsService');
+const notifications = require('../services/notifications');
 
 const router = express.Router();
 
@@ -91,6 +92,7 @@ router.post('/admin/bookings/:id/approve', async (req, res, next) => {
     booking.status = 'confirmed';
     booking.holdExpiresAt = null;
     await booking.save();
+    notifications.sendBookingApproved(booking).catch(() => {});
     res.redirect('/admin/bookings');
   } catch (err) {
     next(err);
@@ -104,6 +106,7 @@ router.post('/admin/bookings/:id/reject', async (req, res, next) => {
       booking.status = 'rejected';
       booking.holdExpiresAt = null;
       await booking.save();
+      notifications.sendBookingRejected(booking).catch(() => {});
     }
     res.redirect('/admin/bookings');
   } catch (err) {
@@ -155,6 +158,7 @@ router.post('/admin/orders/:id/status', async (req, res, next) => {
     if (order && allowed.includes(req.body.status)) {
       order.status = req.body.status;
       await order.save();
+      notifications.sendOrderStatusChanged(order).catch(() => {});
     }
     res.redirect(`/admin/orders/${req.params.id}`);
   } catch (err) {
