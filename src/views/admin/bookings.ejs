@@ -36,11 +36,11 @@
             <td>
               <% if (status === 'pending') { %>
                 <div class="inline-actions">
-                  <form method="POST" action="/admin/bookings/<%= b.id %>/approve"><button class="btn btn-sm btn-primary" type="submit">Approve</button></form>
-                  <form method="POST" action="/admin/bookings/<%= b.id %>/reject"><button class="btn btn-sm btn-outline" type="submit">Reject</button></form>
+                  <form method="POST" action="/admin/bookings/<%= b.id %>/approve"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-primary" type="submit">Approve</button></form>
+                  <form method="POST" action="/admin/bookings/<%= b.id %>/reject"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-outline" type="submit">Reject</button></form>
                 </div>
               <% } else if (status === 'confirmed') { %>
-                <form method="POST" action="/admin/bookings/<%= b.id %>/cancel"><button class="btn btn-sm btn-danger" type="submit">Cancel</button></form>
+                <form method="POST" action="/admin/bookings/<%= b.id %>/cancel"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-danger" type="submit">Cancel</button></form>
               <% } else { %>
                 <span class="badge badge-<%= status %>"><%= status %></span>
               <% } %>

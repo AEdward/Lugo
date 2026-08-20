@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { User } = require('../models');
+const { authLimiter } = require('../middleware/rateLimit');
 
 const router = express.Router();
 
@@ -9,7 +10,7 @@ router.get('/admin/login', (req, res) => {
   res.render('admin/login', { title: 'Admin Login', error: null, layout: 'layouts/admin' });
 });
 
-router.post('/admin/login', async (req, res, next) => {
+router.post('/admin/login', authLimiter, async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ where: { email: (email || '').trim().toLowerCase() } });

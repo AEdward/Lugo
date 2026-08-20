@@ -13,6 +13,7 @@
         <% if (profileSaved) { %><div class="alert alert-success">Profile updated.</div><% } %>
         <% if (profileErrors && profileErrors.length) { %><div class="alert alert-error"><%= profileErrors[0].msg %></div><% } %>
         <form method="POST" action="/account/settings">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="field">
             <label for="name">Full Name</label>
             <input type="text" id="name" name="name" value="<%= currentCustomer.name %>" required>
@@ -35,6 +36,7 @@
         <% if (passwordSaved) { %><div class="alert alert-success">Password updated.</div><% } %>
         <% if (passwordErrors && passwordErrors.length) { %><div class="alert alert-error"><%= passwordErrors[0].msg %></div><% } %>
         <form method="POST" action="/account/settings/password">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="field">
             <label for="currentPassword">Current Password</label>
             <input type="password" id="currentPassword" name="currentPassword" required>
@@ -53,6 +55,7 @@
     </div>
 
     <form method="POST" action="/account/logout" style="margin-top:24px;">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <button class="btn btn-outline" type="submit">Log Out</button>
     </form>
   </div>

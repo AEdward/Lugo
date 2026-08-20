@@ -8,6 +8,7 @@
 <div class="panel">
   <h3 style="margin-bottom:16px;">Add Fabric</h3>
   <form method="POST" action="/admin/fabrics" enctype="multipart/form-data">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class="form-grid">
       <div class="field"><label for="name">Name</label><input type="text" id="name" name="name" required></div>
       <div class="field"><label for="material">Material</label><input type="text" id="material" name="material"></div>
@@ -34,8 +35,8 @@
           <td><span class="badge <%= f.inStock ? 'badge-confirmed' : 'badge-rejected' %>"><%= f.inStock ? 'In stock' : 'Hidden' %></span></td>
           <td>
             <div class="inline-actions">
-              <form method="POST" action="/admin/fabrics/<%= f.id %>/toggle-stock"><button class="btn btn-sm btn-outline" type="submit"><%= f.inStock ? 'Hide' : 'Show' %></button></form>
-              <form method="POST" action="/admin/fabrics/<%= f.id %>/delete"><button class="btn btn-sm btn-danger" type="submit">Delete</button></form>
+              <form method="POST" action="/admin/fabrics/<%= f.id %>/toggle-stock"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-outline" type="submit"><%= f.inStock ? 'Hide' : 'Show' %></button></form>
+              <form method="POST" action="/admin/fabrics/<%= f.id %>/delete"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-danger" type="submit">Delete</button></form>
             </div>
           </td>
         </tr>

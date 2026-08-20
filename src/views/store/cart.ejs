@@ -33,6 +33,7 @@
               <div style="text-align:right;">
                 <strong>ETB <%= (item.lineTotalCents/100).toLocaleString() %></strong>
                 <form method="POST" action="/cart/remove/<%= item.id %>" style="margin-top:8px;">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                   <button class="link-btn" type="submit">Remove</button>
                 </form>
               </div>

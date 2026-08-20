@@ -4,6 +4,7 @@ const { body, validationResult } = require('express-validator');
 const { Op } = require('sequelize');
 const { Customer, Booking, Order, Fabric } = require('../models');
 const { requireCustomer } = require('../middleware/auth');
+const { authLimiter } = require('../middleware/rateLimit');
 
 const router = express.Router();
 
@@ -20,6 +21,7 @@ router.get('/account/register', (req, res) => {
 
 router.post(
   '/account/register',
+  authLimiter,
   [
     body('name').trim().notEmpty().withMessage('Please enter your name.'),
     body('email').trim().isEmail().withMessage('Please enter a valid email.'),
@@ -75,7 +77,7 @@ router.get('/account/login', (req, res) => {
   res.render('account/login', { title: 'Log In — Lugo Tailoring', error: null });
 });
 
-router.post('/account/login', async (req, res, next) => {
+router.post('/account/login', authLimiter, async (req, res, next) => {
   try {
     const email = (req.body.email || '').trim().toLowerCase();
     const customer = await Customer.findOne({ where: { email } });
@@ -200,6 +202,7 @@ router.post(
 router.post(
   '/account/settings/password',
   requireCustomer,
+  authLimiter,
   [
     body('currentPassword').notEmpty().withMessage('Please enter your current password.'),
     body('newPassword').isLength({ min: 8 }).withMessage('New password must be at least 8 characters.'),

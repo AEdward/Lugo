@@ -35,6 +35,7 @@ Edit `.env` and set:
 
 - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` — your MySQL connection details (create the database first, e.g. `CREATE DATABASE lugo_tailoring;`)
 - `SESSION_SECRET` — a long random string
+- `CSRF_SECRET` — optional, another long random string used to sign CSRF tokens. Falls back to `SESSION_SECRET` if left blank.
 - `ADMIN_EMAIL` / `ADMIN_PASSWORD` — credentials for the admin account created by the seeder
 - `CHAPA_SECRET_KEY` / `CHAPA_PUBLIC_KEY` — from your [Chapa dashboard](https://dashboard.chapa.co) (use test keys while developing)
 - `BASE_URL` — the public URL of the site (used to build Chapa callback/return URLs — must be reachable from the internet for the payment callback to work, e.g. via a tunnel in local dev)

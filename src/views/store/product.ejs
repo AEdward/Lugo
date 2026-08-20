@@ -17,6 +17,7 @@
     <% } %>
 
     <form method="POST" action="/store/fabrics/<%= fabric.id %>/add-to-cart" id="configureForm">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="configurator-layout">
         <div>
           <h3>Design Details</h3>

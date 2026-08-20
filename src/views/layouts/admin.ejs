@@ -29,6 +29,7 @@
         <div class="admin-sidebar-footer">
           <a href="/" target="_blank">View Site ↗</a>
           <form method="POST" action="/admin/logout">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <button class="link-btn" type="submit">Log Out</button>
           </form>
         </div>

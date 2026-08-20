@@ -4,6 +4,7 @@ const { Booking } = require('../models');
 const { getAvailabilityForDate, assertSlotIsFree } = require('../services/availabilityService');
 const bookingConfig = require('../config/booking');
 const notifications = require('../services/notifications');
+const { formLimiter } = require('../middleware/rateLimit');
 
 const router = express.Router();
 
@@ -46,6 +47,7 @@ router.get('/api/bookings/availability', async (req, res, next) => {
 
 router.post(
   '/booking',
+  formLimiter,
   [
     body('customerName').trim().notEmpty().withMessage('Please enter your name.'),
     body('email').trim().isEmail().withMessage('Please enter a valid email.'),

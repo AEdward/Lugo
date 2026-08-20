@@ -11,6 +11,7 @@
         <div class="alert alert-error"><%= errors[0].msg %></div>
       <% } %>
       <form method="POST" action="/account/register">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div class="field">
           <label for="name">Full Name</label>
           <input type="text" id="name" name="name" value="<%= values.name || '' %>" required>

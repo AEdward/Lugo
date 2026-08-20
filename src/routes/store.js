@@ -6,6 +6,7 @@ const { Fabric, DesignOption, Order } = require('../models');
 const cartService = require('../services/cartService');
 const chapaService = require('../services/chapaService');
 const notifications = require('../services/notifications');
+const { checkoutLimiter } = require('../middleware/rateLimit');
 
 const router = express.Router();
 
@@ -135,6 +136,7 @@ router.get('/checkout', async (req, res, next) => {
 
 router.post(
   '/checkout',
+  checkoutLimiter,
   [
     body('customerName').trim().notEmpty().withMessage('Please enter your full name.'),
     body('email').trim().isEmail().withMessage('Please enter a valid email.'),

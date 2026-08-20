@@ -20,6 +20,7 @@
   <% if (heroVideoUrl) { %>
     <video src="<%= heroVideoUrl %>" style="width:100%; max-width:480px; border-radius:6px; margin-bottom:16px; display:block;" muted loop autoplay playsinline></video>
     <form method="POST" action="/admin/settings/hero-video/remove" style="margin-bottom:24px;">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <button class="btn btn-sm btn-danger" type="submit">Remove Video (use default image)</button>
     </form>
   <% } else { %>
@@ -27,6 +28,7 @@
   <% } %>
 
   <form method="POST" action="/admin/settings/hero-video" enctype="multipart/form-data">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class="field">
       <label for="video">Upload <%= heroVideoUrl ? 'Replacement' : '' %> Video</label>
       <input type="file" id="video" name="video" accept="video/mp4,video/webm" required>

@@ -4,6 +4,7 @@ const path = require('path');
 const { Op } = require('sequelize');
 const { Booking, Order, Fabric, DesignOption, GalleryImage, ContactMessage } = require('../models');
 const { requireAdmin } = require('../middleware/auth');
+const { doubleCsrfProtection } = require('../middleware/csrf');
 const upload = require('../middleware/upload');
 const videoUpload = require('../middleware/videoUpload');
 const bookingConfig = require('../config/booking');
@@ -177,7 +178,7 @@ router.get('/admin/gallery', async (req, res, next) => {
   }
 });
 
-router.post('/admin/gallery', upload.single('image'), async (req, res, next) => {
+router.post('/admin/gallery', upload.single('image'), doubleCsrfProtection, async (req, res, next) => {
   try {
     if (!req.file) {
       return res.redirect('/admin/gallery');
@@ -222,7 +223,7 @@ router.get('/admin/fabrics', async (req, res, next) => {
   }
 });
 
-router.post('/admin/fabrics', upload.single('image'), async (req, res, next) => {
+router.post('/admin/fabrics', upload.single('image'), doubleCsrfProtection, async (req, res, next) => {
   try {
     const count = await Fabric.count();
     await Fabric.create({
@@ -274,7 +275,7 @@ router.get('/admin/design-options', async (req, res, next) => {
   }
 });
 
-router.post('/admin/design-options', upload.single('image'), async (req, res, next) => {
+router.post('/admin/design-options', upload.single('image'), doubleCsrfProtection, async (req, res, next) => {
   try {
     const count = await DesignOption.count({ where: { category: req.body.category } });
     await DesignOption.create({
@@ -346,31 +347,38 @@ router.get('/admin/settings', async (req, res, next) => {
 });
 
 router.post('/admin/settings/hero-video', (req, res, next) => {
-  videoUpload.single('video')(req, res, async (err) => {
+  videoUpload.single('video')(req, res, (err) => {
     if (err) {
-      const heroVideoUrl = await settingsService.get('heroVideoUrl');
-      return res.status(400).render('admin/settings', {
-        title: 'Settings — Admin',
-        layout: 'layouts/admin',
-        heroVideoUrl,
-        error: err.message,
-      });
+      return settingsService.get('heroVideoUrl').then((heroVideoUrl) =>
+        res.status(400).render('admin/settings', {
+          title: 'Settings — Admin',
+          layout: 'layouts/admin',
+          heroVideoUrl,
+          error: err.message,
+        })
+      );
     }
 
-    try {
-      if (!req.file) return res.redirect('/admin/settings');
+    // req.body is only populated once multer (above) has parsed the
+    // multipart form, so the CSRF token can only be checked after this point.
+    doubleCsrfProtection(req, res, async (csrfErr) => {
+      if (csrfErr) return next(csrfErr);
 
-      const previousUrl = await settingsService.get('heroVideoUrl');
-      await settingsService.set('heroVideoUrl', `/uploads/${req.file.filename}`);
+      try {
+        if (!req.file) return res.redirect('/admin/settings');
 
-      if (previousUrl && previousUrl.startsWith('/uploads/')) {
-        fs.unlink(path.join(__dirname, '..', 'public', previousUrl), () => {});
+        const previousUrl = await settingsService.get('heroVideoUrl');
+        await settingsService.set('heroVideoUrl', `/uploads/${req.file.filename}`);
+
+        if (previousUrl && previousUrl.startsWith('/uploads/')) {
+          fs.unlink(path.join(__dirname, '..', 'public', previousUrl), () => {});
+        }
+
+        res.redirect('/admin/settings');
+      } catch (err2) {
+        next(err2);
       }
-
-      res.redirect('/admin/settings');
-    } catch (err2) {
-      next(err2);
-    }
+    });
   });
 });
 

@@ -8,6 +8,7 @@
 <div class="panel">
   <h3 style="margin-bottom:16px;">Upload New Image</h3>
   <form method="POST" action="/admin/gallery" enctype="multipart/form-data" class="form-grid" style="align-items:end;">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class="field">
       <label for="title">Title</label>
       <input type="text" id="title" name="title">
@@ -32,6 +33,7 @@
         <strong><%= img.title || 'Untitled' %></strong>
         <p style="color:var(--color-ink-soft); font-size:0.85rem;"><%= img.category || '—' %></p>
         <form method="POST" action="/admin/gallery/<%= img.id %>/delete">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <button class="btn btn-sm btn-danger" type="submit">Delete</button>
         </form>
       </div>

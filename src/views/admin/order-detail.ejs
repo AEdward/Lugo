@@ -58,6 +58,7 @@
 
     <h3>Fulfillment Status</h3>
     <form method="POST" action="/admin/orders/<%= order.id %>/status">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="field">
         <select name="status">
           <option value="in_production" <%= order.status === 'in_production' ? 'selected' : '' %>>In Production</option>

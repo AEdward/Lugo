@@ -3,9 +3,12 @@ require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
+const cookieParser = require('cookie-parser');
 const expressLayouts = require('express-ejs-layouts');
 
 const { attachAdminLocals, attachCustomerLocals } = require('./middleware/auth');
+const { doubleCsrfProtection, attachCsrfToken, invalidCsrfTokenError } = require('./middleware/csrf');
+const { generalLimiter } = require('./middleware/rateLimit');
 const publicRoutes = require('./routes/public');
 const bookingRoutes = require('./routes/booking');
 const storeRoutes = require('./routes/store');
@@ -42,8 +45,11 @@ function createApp() {
 
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
+  app.use(cookieParser());
   app.use(express.static(path.join(__dirname, 'public')));
   app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
+
+  app.use(generalLimiter);
 
   // Set before session/auth middleware so error pages can render even if
   // something downstream (e.g. the session store) fails.
@@ -60,7 +66,11 @@ function createApp() {
     session({
       secret: process.env.SESSION_SECRET || 'dev-only-secret-change-me',
       resave: false,
-      saveUninitialized: false,
+      // Must persist from the very first request (not just once something is
+      // written to the session) — CSRF token validation is keyed to the
+      // session id, so it needs to stay stable between the GET that renders
+      // a form and the POST that submits it, even for a first-time visitor.
+      saveUninitialized: true,
       store: process.env.NODE_ENV === 'test' ? undefined : buildSessionStore(),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 7,
@@ -69,6 +79,15 @@ function createApp() {
       },
     })
   );
+
+  // Multipart forms aren't parsed into req.body until multer runs, which
+  // happens per-route (after this point) — those routes re-run
+  // doubleCsrfProtection themselves once the body is available.
+  app.use((req, res, next) => {
+    if (req.is('multipart/form-data')) return next();
+    return doubleCsrfProtection(req, res, next);
+  });
+  app.use(attachCsrfToken);
 
   app.use(attachAdminLocals);
   app.use(attachCustomerLocals);
@@ -92,6 +111,12 @@ function createApp() {
 
   // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {
+    if (err === invalidCsrfTokenError) {
+      return res.status(403).render('errors/500', {
+        title: 'Form expired',
+        message: 'Your form session expired or was already submitted. Please go back and try again.',
+      });
+    }
     console.error(err);
     res.status(err.status || 500).render('errors/500', {
       title: 'Something went wrong',

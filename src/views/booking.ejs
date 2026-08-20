@@ -16,6 +16,7 @@
     <% } %>
 
     <form id="bookingForm" method="POST" action="/booking" class="booking-layout">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div>
         <div class="form-card">
           <div class="field">

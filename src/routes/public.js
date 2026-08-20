@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const { GalleryImage, ContactMessage } = require('../models');
 const settingsService = require('../services/settingsService');
 const notifications = require('../services/notifications');
+const { formLimiter } = require('../middleware/rateLimit');
 
 const router = express.Router();
 
@@ -46,6 +47,7 @@ router.get('/contact', (req, res) => {
 
 router.post(
   '/contact',
+  formLimiter,
   [
     body('name').trim().notEmpty().withMessage('Please enter your name.'),
     body('email').trim().isEmail().withMessage('Please enter a valid email.'),
