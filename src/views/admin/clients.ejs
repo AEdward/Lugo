@@ -8,15 +8,18 @@
 <div class="panel">
   <% if (customers && customers.length) { %>
     <table class="simple">
-      <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Bookings</th><th>Orders</th><th>Joined</th><th></th></tr></thead>
+      <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Bookings</th><th>Orders</th><th>Tier</th><th>Joined</th><th></th></tr></thead>
       <tbody>
         <% customers.forEach(function(c) { %>
+          <% var paidCount = (c.Orders || []).filter(function(o) { return o.paymentStatus === 'paid'; }).length; %>
+          <% var tier = membershipService.computeTier(paidCount, tierThresholds); %>
           <tr>
             <td><%= c.name %></td>
             <td><%= c.email %></td>
             <td><%= c.phone || '—' %></td>
             <td><%= (c.Bookings || []).length %></td>
             <td><%= (c.Orders || []).length %></td>
+            <td><span class="badge <%= tier > 0 ? 'badge-confirmed' : 'badge-expired' %>"><%= membershipService.TIER_LABELS[tier] %></span></td>
             <td><%= new Date(c.createdAt).toLocaleDateString() %></td>
             <td><a class="btn btn-sm btn-outline" href="/admin/clients/<%= c.id %>">View</a></td>
           </tr>

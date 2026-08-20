@@ -1,0 +1,47 @@
+<div class="admin-header">
+  <div>
+    <h1>Newsletter</h1>
+    <p style="color:var(--color-ink-soft);"><%= activeCount %> active subscriber<%= activeCount === 1 ? '' : 's' %>.</p>
+  </div>
+  <a class="btn btn-outline" href="/admin/newsletter/export.csv">Export CSV</a>
+</div>
+
+<% if (sent === 'error') { %>
+  <div class="alert alert-error">Please enter both a subject and a message.</div>
+<% } else if (sent) { %>
+  <div class="alert alert-success">Sent to <%= sent %> subscriber<%= sent === '1' ? '' : 's' %>.</div>
+<% } %>
+
+<div class="panel" style="max-width:640px;">
+  <h3 style="margin-bottom:16px;">Send a Newsletter</h3>
+  <form method="POST" action="/admin/newsletter/send">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="field"><label for="subject">Subject</label><input type="text" id="subject" name="subject" required></div>
+    <div class="field">
+      <label for="bodyHtml">Message (HTML)</label>
+      <textarea id="bodyHtml" name="bodyHtml" rows="10" required></textarea>
+    </div>
+    <button class="btn btn-primary" type="submit" onclick="return confirm('Send this to every active subscriber?');">Send Newsletter</button>
+  </form>
+</div>
+
+<div class="panel">
+  <h3 style="margin-bottom:16px;">Subscribers</h3>
+  <% if (subscribers.length) { %>
+    <table class="simple">
+      <thead><tr><th>Email</th><th>Source</th><th>Status</th><th>Joined</th></tr></thead>
+      <tbody>
+        <% subscribers.forEach(function(s) { %>
+          <tr>
+            <td><%= s.email %></td>
+            <td style="text-transform:capitalize;"><%= s.source || '—' %></td>
+            <td><span class="badge <%= s.subscribed ? 'badge-confirmed' : 'badge-expired' %>"><%= s.subscribed ? 'Subscribed' : 'Unsubscribed' %></span></td>
+            <td><%= new Date(s.createdAt).toLocaleDateString() %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p style="color:var(--color-ink-soft);">No subscribers yet.</p>
+  <% } %>
+</div>

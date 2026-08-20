@@ -59,6 +59,7 @@ function createApp() {
   // something downstream (e.g. the session store) fails.
   app.use((req, res, next) => {
     res.locals.currentPath = req.path;
+    res.locals.newsletterStatus = req.query.newsletter || null;
     res.locals.cartCount = 0;
     res.locals.currentAdmin = null;
     res.locals.currentCustomer = null;

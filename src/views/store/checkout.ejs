@@ -49,6 +49,10 @@
         <div id="cashInfo" class="alert alert-info" style="display:<%= values.paymentMethod === 'cash' ? 'block' : 'none' %>; margin-bottom:16px;"><%= cashPaymentInstructions %></div>
 
         <p class="hint" style="margin-bottom:20px;">Choosing Chapa redirects you to complete payment securely online. Cash and Bank Transfer orders are confirmed once we've verified your payment.</p>
+        <div class="field" style="display:flex; align-items:center; gap:8px;">
+          <input type="checkbox" id="newsletter" name="newsletter" value="1" style="width:auto;" <%= values.newsletter ? 'checked' : '' %>>
+          <label for="newsletter" style="margin:0; font-weight:400;">Subscribe to our newsletter</label>
+        </div>
         <button class="btn btn-primary btn-block" type="submit">Continue</button>
       </form>
     </div>

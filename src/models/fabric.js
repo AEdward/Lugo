@@ -8,6 +8,9 @@ module.exports = (sequelize, DataTypes) => {
     imageUrl: { type: DataTypes.STRING, allowNull: true },
     priceCents: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     inStock: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+    // Null = not tracked (unlimited/made-to-order); a number is decremented
+    // as orders are placed, and hitting 0 automatically flips inStock false.
+    stockQuantity: { type: DataTypes.INTEGER, allowNull: true },
     sortOrder: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
   });
 

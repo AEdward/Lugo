@@ -1,0 +1,14 @@
+<section class="section" style="text-align:center; padding-top:100px; padding-bottom:100px;">
+  <div class="container">
+    <% if (found) { %>
+      <span class="eyebrow">Newsletter</span>
+      <h1>You've been unsubscribed</h1>
+      <p style="color:var(--color-ink-soft); max-width:480px; margin:0 auto 28px;">You won't receive any more newsletter emails from us. You can still hear from us about your own bookings and orders.</p>
+    <% } else { %>
+      <span class="eyebrow">Newsletter</span>
+      <h1>Link not found</h1>
+      <p style="color:var(--color-ink-soft); max-width:480px; margin:0 auto 28px;">This unsubscribe link isn't valid, or you're already unsubscribed.</p>
+    <% } %>
+    <a class="btn btn-outline" href="/">Back to Home</a>
+  </div>
+</section>

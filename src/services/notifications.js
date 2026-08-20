@@ -124,6 +124,19 @@ async function sendOrderStatusChanged(order) {
   });
 }
 
+// ---------- Inventory ----------
+
+async function notifyAdminOutOfStock(fabric) {
+  return emailService.notifyAdmin({
+    subject: `Out of stock — ${fabric.name}`,
+    heading: 'Fabric out of stock',
+    bodyHtml: `
+      <p><strong>${fabric.name}</strong> is now out of stock and hidden from the store.</p>
+      <p>Restock it or adjust the quantity from the <a href="${process.env.BASE_URL}/admin/fabrics/${fabric.id}/edit">admin fabrics page</a>.</p>
+    `,
+  });
+}
+
 // ---------- Contact ----------
 
 async function notifyAdminNewMessage(message) {
@@ -147,4 +160,5 @@ module.exports = {
   notifyAdminNewOrders,
   sendOrderStatusChanged,
   notifyAdminNewMessage,
+  notifyAdminOutOfStock,
 };

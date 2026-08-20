@@ -37,6 +37,14 @@
       <textarea id="cashPaymentInstructions" name="cashPaymentInstructions"><%= values.cashPaymentInstructions %></textarea>
     </div>
 
+    <h3 style="margin:24px 0 16px;">Membership Tiers</h3>
+    <p style="color:var(--color-ink-soft); font-size:0.85rem; margin-bottom:12px;">Minimum number of <strong>paid</strong> orders a customer needs to reach each tier. Shown on their profile and in Clients.</p>
+    <div class="form-grid" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="field"><label for="tier1Min">Tier 1 — orders needed</label><input type="number" min="0" step="1" id="tier1Min" name="tier1Min" value="<%= values.tier1Min %>" required></div>
+      <div class="field"><label for="tier2Min">Tier 2 — orders needed</label><input type="number" min="0" step="1" id="tier2Min" name="tier2Min" value="<%= values.tier2Min %>" required></div>
+      <div class="field"><label for="tier3Min">Tier 3 — orders needed</label><input type="number" min="0" step="1" id="tier3Min" name="tier3Min" value="<%= values.tier3Min %>" required></div>
+    </div>
+
     <button class="btn btn-primary" type="submit">Save Settings</button>
   </form>
 </div>

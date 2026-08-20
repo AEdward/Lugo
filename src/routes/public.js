@@ -4,6 +4,7 @@ const { GalleryImage, ContactMessage, Page, Fabric } = require('../models');
 const settingsService = require('../services/settingsService');
 const notifications = require('../services/notifications');
 const notificationService = require('../services/notificationService');
+const newsletterService = require('../services/newsletterService');
 const { formLimiter } = require('../middleware/rateLimit');
 const { buildPageMeta } = require('../services/pageService');
 
@@ -175,6 +176,34 @@ router.post(
     }
   }
 );
+
+router.post(
+  '/newsletter/subscribe',
+  formLimiter,
+  [body('email').trim().isEmail().withMessage('Please enter a valid email.')],
+  async (req, res, next) => {
+    try {
+      const errors = validationResult(req);
+      const redirectBack = req.body.returnTo && req.body.returnTo.startsWith('/') ? req.body.returnTo : '/';
+      if (!errors.isEmpty()) {
+        return res.redirect(`${redirectBack}${redirectBack.includes('?') ? '&' : '?'}newsletter=error`);
+      }
+      await newsletterService.subscribe(req.body.email, 'footer');
+      res.redirect(`${redirectBack}${redirectBack.includes('?') ? '&' : '?'}newsletter=subscribed`);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.get('/newsletter/unsubscribe/:token', async (req, res, next) => {
+  try {
+    const subscriber = await newsletterService.unsubscribeByToken(req.params.token);
+    res.render('newsletter-unsubscribe', { title: 'Unsubscribed — Lugo Tailoring', found: !!subscriber });
+  } catch (err) {
+    next(err);
+  }
+});
 
 const STATIC_SITEMAP_PATHS = ['/', '/about', '/bespoke', '/store', '/gallery', '/booking', '/contact', '/terms', '/privacy', '/refund-policy'];
 

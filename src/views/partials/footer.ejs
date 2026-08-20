@@ -39,6 +39,23 @@
         <a href="/refund-policy">Refund &amp; Return Policy</a>
       </div>
     </div>
+    <div class="footer-newsletter">
+      <% if (newsletterStatus === 'subscribed') { %>
+        <p class="footer-newsletter-message">Thanks — you're subscribed to our newsletter.</p>
+      <% } else { %>
+        <h4>Join Our Newsletter</h4>
+        <p>New fabrics, seasonal offers, and studio news — no spam, unsubscribe anytime.</p>
+        <% if (newsletterStatus === 'error') { %>
+          <p class="footer-newsletter-message footer-newsletter-error">Please enter a valid email address.</p>
+        <% } %>
+        <form method="POST" action="/newsletter/subscribe" class="footer-newsletter-form">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+          <input type="hidden" name="returnTo" value="<%= currentPath %>">
+          <input type="email" name="email" placeholder="you@example.com" required>
+          <button class="btn btn-accent btn-sm" type="submit">Subscribe</button>
+        </form>
+      <% } %>
+    </div>
     <div class="footer-bottom">
       <span>&copy; <%= new Date().getFullYear() %> <%= siteSettings.siteName %>. All rights reserved.</span>
       <span>

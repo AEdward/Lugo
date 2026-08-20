@@ -13,7 +13,12 @@
         <p style="color:var(--color-ink-soft); margin:0;"><strong style="color:var(--color-ink);">Email</strong><br><%= currentCustomer.email %></p>
         <p style="color:var(--color-ink-soft); margin:0;"><strong style="color:var(--color-ink);">Phone</strong><br><%= currentCustomer.phone || 'Not provided' %></p>
       </div>
-      <p style="color:var(--color-ink-soft); margin:14px 0 0;">Member since <%= new Date(memberSince).toLocaleDateString([], { year: 'numeric', month: 'long' }) %></p>
+      <p style="color:var(--color-ink-soft); margin:14px 0 0;">
+        Member since <%= new Date(memberSince).toLocaleDateString([], { year: 'numeric', month: 'long' }) %>
+        &nbsp;&middot;&nbsp;
+        <span class="badge <%= membership.tier > 0 ? 'badge-confirmed' : 'badge-expired' %>"><%= membership.label %></span>
+        <span style="font-size:0.82rem;">(<%= membership.paidOrderCount %> paid order<%= membership.paidOrderCount === 1 ? '' : 's' %>)</span>
+      </p>
       <a class="btn btn-outline btn-sm" href="/account/settings" style="margin-top:14px;">Edit Profile</a>
     </div>
 

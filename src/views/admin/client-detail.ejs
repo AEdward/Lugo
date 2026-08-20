@@ -1,7 +1,7 @@
 <div class="admin-header">
   <div>
-    <h1><%= customer.name %></h1>
-    <p style="color:var(--color-ink-soft);">Joined <%= new Date(customer.createdAt).toLocaleDateString() %></p>
+    <h1><%= customer.name %> <span class="badge <%= membership.tier > 0 ? 'badge-confirmed' : 'badge-expired' %>" style="vertical-align:middle;"><%= membership.label %></span></h1>
+    <p style="color:var(--color-ink-soft);">Joined <%= new Date(customer.createdAt).toLocaleDateString() %> &middot; <%= membership.paidOrderCount %> paid order<%= membership.paidOrderCount === 1 ? '' : 's' %></p>
   </div>
   <a class="btn btn-outline btn-sm" href="/admin/clients">&larr; Back to Clients</a>
 </div>

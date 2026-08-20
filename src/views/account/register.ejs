@@ -34,6 +34,10 @@
             <input type="password" id="confirmPassword" name="confirmPassword" minlength="8" required>
           </div>
         </div>
+        <div class="field" style="display:flex; align-items:center; gap:8px;">
+          <input type="checkbox" id="newsletter" name="newsletter" value="1" style="width:auto;" <%= values.newsletter ? 'checked' : '' %>>
+          <label for="newsletter" style="margin:0; font-weight:400;">Subscribe to our newsletter</label>
+        </div>
         <button class="btn btn-primary btn-block" type="submit">Create Account</button>
       </form>
       <p class="hint" style="margin-top:16px; text-align:center;">Already have an account? <a href="/account/login">Log in</a></p>

@@ -4,7 +4,7 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const { Op } = require('sequelize');
-const { Booking, Order, Fabric, DesignOption, GalleryImage, ContactMessage, User, Page, Customer } = require('../models');
+const { Booking, Order, Fabric, DesignOption, GalleryImage, ContactMessage, User, Page, Customer, NewsletterSubscriber } = require('../models');
 const { requireAdmin } = require('../middleware/auth');
 const { doubleCsrfProtection } = require('../middleware/csrf');
 const upload = require('../middleware/upload');
@@ -14,6 +14,9 @@ const settingsService = require('../services/settingsService');
 const notifications = require('../services/notifications');
 const notificationService = require('../services/notificationService');
 const { markOrderGroupPaid } = require('../services/orderPaymentService');
+const stockService = require('../services/stockService');
+const emailService = require('../services/emailService');
+const membershipService = require('../services/membershipService');
 const analyticsService = require('../services/analyticsService');
 const healthService = require('../services/healthService');
 
@@ -297,9 +300,16 @@ router.get('/admin/fabrics', async (req, res, next) => {
   }
 });
 
+function parseStockQuantity(raw) {
+  if (raw === undefined || raw === null || raw.trim() === '') return null;
+  const parsed = parseInt(raw, 10);
+  return Number.isNaN(parsed) ? null : Math.max(0, parsed);
+}
+
 router.post('/admin/fabrics', upload.single('image'), doubleCsrfProtection, async (req, res, next) => {
   try {
     const count = await Fabric.count();
+    const stockQuantity = parseStockQuantity(req.body.stockQuantity);
     await Fabric.create({
       name: req.body.name,
       description: req.body.description || null,
@@ -307,7 +317,8 @@ router.post('/admin/fabrics', upload.single('image'), doubleCsrfProtection, asyn
       color: req.body.color || null,
       imageUrl: req.file ? `/uploads/${req.file.filename}` : null,
       priceCents: Math.round(parseFloat(req.body.price || '0') * 100),
-      inStock: true,
+      stockQuantity,
+      inStock: stockQuantity !== 0,
       sortOrder: count + 1,
     });
     res.redirect('/admin/fabrics');
@@ -336,6 +347,8 @@ router.post('/admin/fabrics/:id/edit', upload.single('image'), doubleCsrfProtect
     fabric.material = req.body.material || null;
     fabric.color = req.body.color || null;
     fabric.priceCents = Math.round(parseFloat(req.body.price || '0') * 100);
+    const stockQuantity = parseStockQuantity(req.body.stockQuantity);
+    fabric.stockQuantity = stockQuantity;
 
     if (req.file) {
       const previousUrl = fabric.imageUrl;
@@ -345,7 +358,13 @@ router.post('/admin/fabrics/:id/edit', upload.single('image'), doubleCsrfProtect
       }
     }
 
-    await fabric.save();
+    if (stockQuantity === 0) {
+      await stockService.markOutOfStock(fabric);
+    } else {
+      if (stockQuantity !== null) fabric.inStock = true;
+      await fabric.save();
+    }
+
     res.redirect('/admin/fabrics');
   } catch (err) {
     next(err);
@@ -356,8 +375,12 @@ router.post('/admin/fabrics/:id/toggle-stock', async (req, res, next) => {
   try {
     const fabric = await Fabric.findByPk(req.params.id);
     if (fabric) {
-      fabric.inStock = !fabric.inStock;
-      await fabric.save();
+      if (fabric.inStock) {
+        await stockService.markOutOfStock(fabric);
+      } else {
+        fabric.inStock = true;
+        await fabric.save();
+      }
     }
     res.redirect('/admin/fabrics');
   } catch (err) {
@@ -484,14 +507,17 @@ router.post('/admin/messages/:id/delete', async (req, res, next) => {
 
 router.get('/admin/clients', async (req, res, next) => {
   try {
-    const customers = await Customer.findAll({
-      order: [['createdAt', 'DESC']],
-      include: [
-        { model: Booking, attributes: ['id'] },
-        { model: Order, attributes: ['id'] },
-      ],
-    });
-    res.render('admin/clients', { title: 'Clients — Admin', layout: 'layouts/admin', customers });
+    const [customers, tierThresholds] = await Promise.all([
+      Customer.findAll({
+        order: [['createdAt', 'DESC']],
+        include: [
+          { model: Booking, attributes: ['id'] },
+          { model: Order, attributes: ['id', 'paymentStatus'] },
+        ],
+      }),
+      membershipService.getThresholds(),
+    ]);
+    res.render('admin/clients', { title: 'Clients — Admin', layout: 'layouts/admin', customers, tierThresholds, membershipService });
   } catch (err) {
     next(err);
   }
@@ -502,9 +528,10 @@ router.get('/admin/clients/:id', async (req, res, next) => {
     const customer = await Customer.findByPk(req.params.id);
     if (!customer) return res.status(404).render('errors/404', { title: 'Not found' });
 
-    const [bookings, orders] = await Promise.all([
+    const [bookings, orders, membership] = await Promise.all([
       Booking.findAll({ where: { customerId: customer.id }, order: [['startsAt', 'DESC']] }),
       Order.findAll({ where: { customerId: customer.id }, order: [['createdAt', 'DESC']], include: [Fabric] }),
+      membershipService.getTierForCustomer(customer.id),
     ]);
 
     res.render('admin/client-detail', {
@@ -513,6 +540,7 @@ router.get('/admin/clients/:id', async (req, res, next) => {
       customer,
       bookings,
       orders,
+      membership,
       error: null,
       reset: req.query.reset === '1',
     });
@@ -563,6 +591,72 @@ router.post('/admin/clients/:id/delete', async (req, res, next) => {
     next(err);
   }
 });
+
+// ---------- Newsletter ----------
+
+router.get('/admin/newsletter', async (req, res, next) => {
+  try {
+    const subscribers = await NewsletterSubscriber.findAll({ order: [['createdAt', 'DESC']] });
+    res.render('admin/newsletter', {
+      title: 'Newsletter — Admin',
+      layout: 'layouts/admin',
+      subscribers,
+      activeCount: subscribers.filter((s) => s.subscribed).length,
+      sent: req.query.sent || null,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/admin/newsletter/export.csv', async (req, res, next) => {
+  try {
+    const subscribers = await NewsletterSubscriber.findAll({ where: { subscribed: true }, order: [['createdAt', 'ASC']] });
+    const rows = ['email,source,joined'];
+    subscribers.forEach((s) => {
+      rows.push(`${s.email},${s.source || ''},${s.createdAt.toISOString()}`);
+    });
+    res.type('text/csv').set('Content-Disposition', 'attachment; filename="newsletter-subscribers.csv"').send(rows.join('\n'));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post(
+  '/admin/newsletter/send',
+  [
+    body('subject').trim().notEmpty().withMessage('Please enter a subject.'),
+    body('bodyHtml').trim().notEmpty().withMessage('Please enter a message.'),
+  ],
+  async (req, res, next) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.redirect('/admin/newsletter?sent=error');
+      }
+
+      const subscribers = await NewsletterSubscriber.findAll({ where: { subscribed: true } });
+      const { subject, bodyHtml } = req.body;
+
+      // Sequential, not Promise.all — this can be a real batch of emails and
+      // there's no reason to hammer the SMTP connection all at once.
+      for (const subscriber of subscribers) {
+        const unsubscribeUrl = `${res.locals.siteBaseUrl}/newsletter/unsubscribe/${subscriber.unsubscribeToken}`;
+        // eslint-disable-next-line no-await-in-loop
+        await emailService.sendMail({
+          to: subscriber.email,
+          subject,
+          heading: subject,
+          bodyHtml: `${bodyHtml}<p style="margin-top:24px;font-size:12px;color:#8a8078;"><a href="${unsubscribeUrl}">Unsubscribe</a> from this newsletter.</p>`,
+        });
+      }
+
+      res.redirect(`/admin/newsletter?sent=${subscribers.length}`);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 // ---------- Admin users ----------
 

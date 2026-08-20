@@ -295,6 +295,25 @@ button.link-btn {
   margin-bottom: 10px;
 }
 .footer-brand img { width: 32px; height: 32px; }
+.footer-newsletter {
+  border-top: 1px solid rgba(255,255,255,0.12);
+  padding: 24px 0;
+  text-align: center;
+}
+.footer-newsletter h4 { color: white; margin-bottom: 6px; }
+.footer-newsletter p { color: #a99f96; font-size: 0.88rem; margin-bottom: 14px; }
+.footer-newsletter-form { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.footer-newsletter-form input[type="email"] {
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.06);
+  color: white;
+  min-width: 240px;
+}
+.footer-newsletter-form input[type="email"]::placeholder { color: #a99f96; }
+.footer-newsletter-message { color: white; font-weight: 600; }
+.footer-newsletter-error { color: var(--color-danger); }
 .footer-bottom {
   border-top: 1px solid rgba(255,255,255,0.12);
   padding-top: 20px;

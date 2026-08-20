@@ -18,6 +18,10 @@
       <div class="field"><label for="price">Price (ETB)</label><input type="number" step="0.01" id="price" name="price" required></div>
     </div>
     <div class="field"><label for="description">Description</label><textarea id="description" name="description"></textarea></div>
+    <div class="field">
+      <label for="stockQuantity">Stock Quantity (leave blank for unlimited / made-to-order)</label>
+      <input type="number" step="1" min="0" id="stockQuantity" name="stockQuantity">
+    </div>
     <div class="field"><label for="image">Swatch Image (JPG or PNG)</label><input type="file" id="image" name="image" accept="image/png,image/jpeg"></div>
     <button class="btn btn-primary" type="submit">Add Fabric</button>
   </form>
@@ -25,18 +29,19 @@
 
 <div class="panel">
   <table class="simple">
-    <thead><tr><th>Name</th><th>Material</th><th>Price</th><th>Status</th><th></th></tr></thead>
+    <thead><tr><th>Name</th><th>Material</th><th>Price</th><th>Stock Qty</th><th>Status</th><th></th></tr></thead>
     <tbody>
       <% fabrics.forEach(function(f) { %>
         <tr>
           <td><%= f.name %></td>
           <td><%= f.material %></td>
           <td>ETB <%= (f.priceCents/100).toLocaleString() %></td>
-          <td><span class="badge <%= f.inStock ? 'badge-confirmed' : 'badge-rejected' %>"><%= f.inStock ? 'In stock' : 'Hidden' %></span></td>
+          <td><%= f.stockQuantity === null ? 'Unlimited' : f.stockQuantity %></td>
+          <td><span class="badge <%= f.inStock ? 'badge-confirmed' : 'badge-rejected' %>"><%= f.inStock ? 'In Stock' : 'Out of Stock' %></span></td>
           <td>
             <div class="inline-actions">
               <a class="btn btn-sm btn-outline" href="/admin/fabrics/<%= f.id %>/edit">Edit</a>
-              <form method="POST" action="/admin/fabrics/<%= f.id %>/toggle-stock"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-outline" type="submit"><%= f.inStock ? 'Hide' : 'Show' %></button></form>
+              <form method="POST" action="/admin/fabrics/<%= f.id %>/toggle-stock"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-outline" type="submit"><%= f.inStock ? 'Mark Out of Stock' : 'Mark In Stock' %></button></form>
               <form method="POST" action="/admin/fabrics/<%= f.id %>/delete"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-danger" type="submit">Delete</button></form>
             </div>
           </td>

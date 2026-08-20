@@ -6,6 +6,8 @@ const { Customer, Booking, Order, Fabric } = require('../models');
 const { requireCustomer } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/rateLimit');
 const notificationService = require('../services/notificationService');
+const newsletterService = require('../services/newsletterService');
+const membershipService = require('../services/membershipService');
 
 const router = express.Router();
 
@@ -58,6 +60,10 @@ router.post(
         phone: req.body.phone || null,
         passwordHash,
       });
+
+      if (req.body.newsletter) {
+        newsletterService.subscribe(email, 'registration').catch(() => {});
+      }
 
       req.session.customerId = customer.id;
       req.session.customer = customerSessionPayload(customer);
@@ -112,13 +118,14 @@ router.post('/account/logout', (req, res) => {
 
 router.get('/account', requireCustomer, async (req, res, next) => {
   try {
-    const [customer, upcomingBooking, recentOrder] = await Promise.all([
+    const [customer, upcomingBooking, recentOrder, membership] = await Promise.all([
       Customer.findByPk(req.session.customerId),
       Booking.findOne({
         where: { customerId: req.session.customerId, status: 'confirmed', startsAt: { [Op.gte]: new Date() } },
         order: [['startsAt', 'ASC']],
       }),
       Order.findOne({ where: { customerId: req.session.customerId }, order: [['createdAt', 'DESC']], include: [Fabric] }),
+      membershipService.getTierForCustomer(req.session.customerId),
     ]);
 
     res.render('account/dashboard', {
@@ -126,6 +133,7 @@ router.get('/account', requireCustomer, async (req, res, next) => {
       upcomingBooking,
       recentOrder,
       memberSince: customer.createdAt,
+      membership,
     });
   } catch (err) {
     next(err);

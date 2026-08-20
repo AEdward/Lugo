@@ -13,6 +13,10 @@ const SITE_SETTING_DEFAULTS = {
   bankTransferDetails: '',
   // Shown to customers who choose "Cash" at checkout.
   cashPaymentInstructions: 'Pay in cash when you visit the studio for your fitting or pickup.',
+  // Membership tiers — minimum number of PAID orders required to reach each tier.
+  tier1Min: '1',
+  tier2Min: '5',
+  tier3Min: '10',
 };
 
 async function get(key, fallback = null) {

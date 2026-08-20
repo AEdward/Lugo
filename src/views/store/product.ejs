@@ -7,6 +7,9 @@
         <h1><%= fabric.name %></h1>
         <p style="color:var(--color-ink-soft);"><%= fabric.description %></p>
         <strong style="font-size:1.3rem; color:var(--color-accent-dark);">From ETB <%= (fabric.priceCents / 100).toLocaleString() %></strong>
+        <% if (outOfStock) { %>
+          <p style="margin-top:12px;"><span class="badge badge-rejected">Out of Stock</span></p>
+        <% } %>
       </div>
     </div>
 
@@ -16,6 +19,12 @@
       </div>
     <% } %>
 
+    <% if (outOfStock) { %>
+      <div class="panel" style="text-align:center; max-width:520px;">
+        <p style="color:var(--color-ink-soft); margin-bottom:16px;">This fabric is currently out of stock. Check back soon, or browse other fabrics.</p>
+        <a class="btn btn-outline" href="/store">Browse the Store</a>
+      </div>
+    <% } else { %>
     <form method="POST" action="/store/fabrics/<%= fabric.id %>/add-to-cart" id="configureForm">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="configurator-layout">
@@ -94,10 +103,13 @@
         </aside>
       </div>
     </form>
+    <% } %>
   </div>
 </section>
 
+<% if (!outOfStock) { %>
 <script>
   window.__fabricPriceCents = <%- fabric.priceCents %>;
 </script>
 <script src="/js/configurator.js"></script>
+<% } %>

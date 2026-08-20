@@ -47,7 +47,7 @@ async function buildCartDetails(cartItems) {
 
   for (const raw of cartItems) {
     const fabric = fabricMap.get(raw.fabricId);
-    if (!fabric) continue;
+    if (!fabric || !fabric.inStock) continue;
 
     const selectedOptions = (raw.optionIds || [])
       .map((id) => optionMap.get(id))

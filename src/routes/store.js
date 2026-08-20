@@ -6,6 +6,8 @@ const cartService = require('../services/cartService');
 const chapaService = require('../services/chapaService');
 const notificationService = require('../services/notificationService');
 const { markOrderGroupPaid } = require('../services/orderPaymentService');
+const { decrementStockForOrders } = require('../services/stockService');
+const newsletterService = require('../services/newsletterService');
 const settingsService = require('../services/settingsService');
 const receiptUpload = require('../middleware/receiptUpload');
 const { doubleCsrfProtection } = require('../middleware/csrf');
@@ -47,6 +49,7 @@ router.get('/store/fabrics/:id', async (req, res, next) => {
       measurementFields: MEASUREMENT_FIELDS,
       errors: [],
       values: {},
+      outOfStock: !fabric.inStock,
     });
   } catch (err) {
     next(err);
@@ -69,6 +72,18 @@ router.post(
       const errors = validationResult(req);
       const options = await DesignOption.findAll({ order: [['category', 'ASC'], ['sortOrder', 'ASC']] });
 
+      if (!fabric.inStock) {
+        return res.status(400).render('store/product', {
+          title: `${fabric.name} — Lugo Tailoring`,
+          fabric,
+          optionGroups: optionsByCategory(options),
+          measurementFields: MEASUREMENT_FIELDS,
+          errors: [{ msg: 'This fabric is currently out of stock.' }],
+          values: req.body,
+          outOfStock: true,
+        });
+      }
+
       if (!errors.isEmpty()) {
         return res.status(400).render('store/product', {
           title: `${fabric.name} — Lugo Tailoring`,
@@ -77,6 +92,7 @@ router.post(
           measurementFields: MEASUREMENT_FIELDS,
           errors: errors.array(),
           values: req.body,
+          outOfStock: false,
         });
       }
 
@@ -192,6 +208,15 @@ router.post(
           receiptStatus: paymentMethod === 'bank_transfer' ? 'awaiting_upload' : 'not_applicable',
         }))
       );
+
+      // Reserve stock as soon as the order is placed (not only once paid) —
+      // otherwise a finite-stock fabric could be oversold during the window
+      // where a Chapa/bank-transfer payment is still pending.
+      decrementStockForOrders(createdOrders).catch(() => {});
+
+      if (req.body.newsletter) {
+        newsletterService.subscribe(email, 'checkout').catch(() => {});
+      }
 
       if (paymentMethod !== 'chapa') {
         // Cash and bank transfer are settled in person / manually by an
