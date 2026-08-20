@@ -1,6 +1,14 @@
 const rateLimit = require('express-rate-limit');
 
 function buildLimiter(windowMs, limit, message) {
+  // The automated test suite exercises the same auth/form endpoints dozens of
+  // times per run from a single "IP" — real rate limiting there would just
+  // make the suite flaky, not catch anything (the limiting logic itself is
+  // covered separately, against a real server, as part of manual QA).
+  if (process.env.NODE_ENV === 'test') {
+    return (req, res, next) => next();
+  }
+
   return rateLimit({
     windowMs,
     limit,

@@ -14,6 +14,13 @@ const base = {
 
 module.exports = {
   development: base,
-  test: { ...base, database: `${process.env.DB_NAME || 'lugo_tailoring'}_test` },
+  // Automated tests run against an isolated in-memory SQLite database instead
+  // of MySQL, so `npm test` works without a database server configured.
+  test: {
+    dialect: 'sqlite',
+    storage: ':memory:',
+    define: { underscored: true },
+    logging: false,
+  },
   production: base,
 };

@@ -59,6 +59,14 @@ npm start      # production
 
 Visit `http://localhost:3000`. Admin dashboard is at `/admin/login` using the `ADMIN_EMAIL` / `ADMIN_PASSWORD` you set.
 
+## Tests
+
+```bash
+npm test
+```
+
+Runs the automated test suite (Jest + Supertest) against an isolated in-memory SQLite database — no MySQL server or `.env` setup required. Covers public pages, CSRF protection (valid/forged/stolen tokens), admin and customer authentication, admin fabric/design-option CRUD, and the booking/store flows (validation and success paths). Payment against the real Chapa API is out of scope for this suite; that's verified manually against Chapa's test environment.
+
 ## Booking rules
 
 Configured via env vars (see `.env.example`):

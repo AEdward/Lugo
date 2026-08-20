@@ -10,7 +10,8 @@
     "migrate:undo": "sequelize-cli db:migrate:undo",
     "seed": "sequelize-cli db:seed:all",
     "seed:undo": "sequelize-cli db:seed:undo:all",
-    "backup": "node scripts/backup.js"
+    "backup": "node scripts/backup.js",
+    "test": "jest --runInBand"
   },
   "license": "UNLICENSED",
   "private": true,
@@ -36,7 +37,10 @@
     "uuid": "^11.0.5"
   },
   "devDependencies": {
+    "jest": "^30.4.2",
     "nodemon": "^3.1.9",
-    "sequelize-cli": "^6.6.2"
+    "sequelize-cli": "^6.6.2",
+    "sqlite3": "^6.0.1",
+    "supertest": "^7.2.2"
   }
 }
