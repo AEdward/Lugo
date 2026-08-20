@@ -1,6 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const { Op } = require('sequelize');
@@ -897,6 +898,84 @@ const PAGE_LABELS = {
 };
 const LEGAL_PAGE_SLUGS = new Set(['terms', 'privacy', 'refund-policy']);
 const PAGE_SLUGS = Object.keys(PAGE_LABELS);
+// Only pages whose templates actually render content.blocks (see the
+// partials/blocks includes in home.ejs / about.ejs / bespoke.ejs) get the
+// block manager UI — showing it elsewhere would let admins "save" blocks
+// that never appear anywhere.
+const BLOCKS_ENABLED_SLUGS = new Set(['home', 'about', 'bespoke']);
+const BLOCK_TYPES = new Set(['heading', 'text', 'image', 'video', 'button', 'feature-grid', 'image-text', 'cta']);
+
+function parseBlockData(type, b) {
+  switch (type) {
+    case 'heading':
+      return { eyebrow: (b.eyebrow || '').trim(), heading: (b.heading || '').trim(), align: b.align === 'center' ? 'center' : 'left' };
+    case 'text':
+      return { body: b.body || '' };
+    case 'image':
+      return { src: (b.src || '').trim(), alt: (b.alt || '').trim(), caption: (b.caption || '').trim() };
+    case 'video':
+      return { url: (b.url || '').trim(), caption: (b.caption || '').trim() };
+    case 'button':
+      return {
+        label: (b.label || '').trim(),
+        href: (b.href || '').trim(),
+        style: ['primary', 'outline', 'accent'].includes(b.style) ? b.style : 'primary',
+        align: ['left', 'center', 'right'].includes(b.align) ? b.align : 'center',
+      };
+    case 'feature-grid': {
+      const items = (b.items || [])
+        .filter((it) => it && (it.title || '').trim())
+        .map((it) => ({
+          icon: (it.icon || '').trim(),
+          eyebrow: (it.eyebrow || '').trim(),
+          title: (it.title || '').trim(),
+          text: (it.text || '').trim(),
+          buttonLabel: (it.buttonLabel || '').trim(),
+          buttonHref: (it.buttonHref || '').trim(),
+        }));
+      return {
+        eyebrow: (b.eyebrow || '').trim(),
+        heading: (b.heading || '').trim(),
+        columns: Number(b.columns) === 2 ? 2 : 3,
+        sectionStyle: b.sectionStyle === 'alt' ? 'alt' : '',
+        cardStyle: !!b.cardStyle,
+        items,
+      };
+    }
+    case 'image-text': {
+      const paragraphs = (b.paragraphs || []).filter((p) => p && (p.text || '').trim()).map((p) => ({ text: p.text.trim(), soft: !!p.soft }));
+      return {
+        src: (b.src || '').trim(),
+        alt: (b.alt || '').trim(),
+        imagePosition: b.imagePosition === 'right' ? 'right' : 'left',
+        sectionStyle: b.sectionStyle === 'alt' ? 'alt' : '',
+        eyebrow: (b.eyebrow || '').trim(),
+        heading: (b.heading || '').trim(),
+        paragraphs,
+        buttonLabel: (b.buttonLabel || '').trim(),
+        buttonHref: (b.buttonHref || '').trim(),
+      };
+    }
+    case 'cta': {
+      const buttons = (b.buttons || [])
+        .filter((btn) => btn && (btn.label || '').trim() && (btn.href || '').trim())
+        .map((btn) => ({
+          label: btn.label.trim(),
+          href: btn.href.trim(),
+          style: ['primary', 'outline', 'accent'].includes(btn.style) ? btn.style : 'primary',
+        }));
+      return {
+        eyebrow: (b.eyebrow || '').trim(),
+        heading: (b.heading || '').trim(),
+        text: (b.text || '').trim(),
+        sectionStyle: b.sectionStyle === 'alt' ? 'alt' : '',
+        buttons,
+      };
+    }
+    default:
+      return {};
+  }
+}
 
 router.get('/admin/pages', async (req, res, next) => {
   try {
@@ -918,13 +997,16 @@ router.get('/admin/pages/:slug/edit', async (req, res, next) => {
     if (!PAGE_LABELS[slug]) return res.status(404).render('errors/404', { title: 'Not found' });
 
     const page = await Page.findOne({ where: { slug } });
+    const content = page ? page.content : {};
     res.render('admin/page-edit', {
       title: `${PAGE_LABELS[slug]} Page — Admin`,
       layout: 'layouts/admin',
       slug,
       label: PAGE_LABELS[slug],
       isLegal: LEGAL_PAGE_SLUGS.has(slug),
-      content: page ? page.content : {},
+      content,
+      blocksEnabled: BLOCKS_ENABLED_SLUGS.has(slug),
+      blocks: content.blocks || [],
       saved: req.query.saved === '1',
       error: null,
     });
@@ -957,6 +1039,140 @@ router.post('/admin/pages/:slug/edit', async (req, res, next) => {
     await page.save();
 
     res.redirect(`/admin/pages/${slug}/edit?saved=1`);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------- Page content blocks ----------
+
+router.get('/admin/pages/:slug/blocks/new', (req, res, next) => {
+  try {
+    const { slug } = req.params;
+    if (!BLOCKS_ENABLED_SLUGS.has(slug)) return res.status(404).render('errors/404', { title: 'Not found' });
+
+    const type = req.query.type;
+    if (!BLOCK_TYPES.has(type)) return res.redirect(`/admin/pages/${slug}/edit`);
+
+    res.render('admin/block-edit', {
+      title: `Add Block — Admin`,
+      layout: 'layouts/admin',
+      slug,
+      type,
+      blockId: null,
+      data: {},
+      error: null,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/admin/pages/:slug/blocks/new', async (req, res, next) => {
+  try {
+    const { slug } = req.params;
+    if (!BLOCKS_ENABLED_SLUGS.has(slug)) return res.status(404).render('errors/404', { title: 'Not found' });
+
+    const type = req.body.type;
+    if (!BLOCK_TYPES.has(type)) return res.redirect(`/admin/pages/${slug}/edit`);
+
+    const [page] = await Page.findOrCreate({ where: { slug }, defaults: { content: {} } });
+    // Sequelize keeps content and _previousDataValues.content pointing at the
+    // same object after load, so mutating the blocks array in place (instead
+    // of building a new one) would corrupt the "previous value" it diffs
+    // against too — the change would silently never get saved.
+    const blocks = (page.content.blocks || []).slice();
+    blocks.push({ id: crypto.randomUUID(), type, data: parseBlockData(type, req.body) });
+    page.content = { ...page.content, blocks };
+    await page.save();
+
+    res.redirect(`/admin/pages/${slug}/edit`);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/admin/pages/:slug/blocks/:blockId/edit', async (req, res, next) => {
+  try {
+    const { slug, blockId } = req.params;
+    if (!BLOCKS_ENABLED_SLUGS.has(slug)) return res.status(404).render('errors/404', { title: 'Not found' });
+
+    const page = await Page.findOne({ where: { slug } });
+    const block = page && (page.content.blocks || []).find((b) => b.id === blockId);
+    if (!block) return res.status(404).render('errors/404', { title: 'Not found' });
+
+    res.render('admin/block-edit', {
+      title: `Edit Block — Admin`,
+      layout: 'layouts/admin',
+      slug,
+      type: block.type,
+      blockId,
+      data: block.data || {},
+      error: null,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/admin/pages/:slug/blocks/:blockId/edit', async (req, res, next) => {
+  try {
+    const { slug, blockId } = req.params;
+    if (!BLOCKS_ENABLED_SLUGS.has(slug)) return res.status(404).render('errors/404', { title: 'Not found' });
+
+    const page = await Page.findOne({ where: { slug } });
+    // See the comment in the "new block" route above — always work on a
+    // fresh copy, never the array Sequelize is diffing against.
+    const blocks = ((page && page.content.blocks) || []).slice();
+    const index = blocks.findIndex((b) => b.id === blockId);
+    if (index === -1) return res.status(404).render('errors/404', { title: 'Not found' });
+
+    blocks[index] = { id: blockId, type: blocks[index].type, data: parseBlockData(blocks[index].type, req.body) };
+    page.content = { ...page.content, blocks };
+    await page.save();
+
+    res.redirect(`/admin/pages/${slug}/edit`);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/admin/pages/:slug/blocks/:blockId/delete', async (req, res, next) => {
+  try {
+    const { slug, blockId } = req.params;
+    if (!BLOCKS_ENABLED_SLUGS.has(slug)) return res.status(404).render('errors/404', { title: 'Not found' });
+
+    const page = await Page.findOne({ where: { slug } });
+    if (page) {
+      const blocks = (page.content.blocks || []).filter((b) => b.id !== blockId);
+      page.content = { ...page.content, blocks };
+      await page.save();
+    }
+    res.redirect(`/admin/pages/${slug}/edit`);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/admin/pages/:slug/blocks/:blockId/move', async (req, res, next) => {
+  try {
+    const { slug, blockId } = req.params;
+    if (!BLOCKS_ENABLED_SLUGS.has(slug)) return res.status(404).render('errors/404', { title: 'Not found' });
+
+    const page = await Page.findOne({ where: { slug } });
+    if (page) {
+      const blocks = (page.content.blocks || []).slice();
+      const index = blocks.findIndex((b) => b.id === blockId);
+      if (index !== -1) {
+        const swapWith = req.body.direction === 'up' ? index - 1 : index + 1;
+        if (swapWith >= 0 && swapWith < blocks.length) {
+          [blocks[index], blocks[swapWith]] = [blocks[swapWith], blocks[index]];
+          page.content = { ...page.content, blocks };
+          await page.save();
+        }
+      }
+    }
+    res.redirect(`/admin/pages/${slug}/edit`);
   } catch (err) {
     next(err);
   }

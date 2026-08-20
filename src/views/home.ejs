@@ -15,70 +15,15 @@
   </div>
 </section>
 
-<section class="section">
-  <div class="container">
-    <div class="section-header center">
-      <span class="eyebrow">Two Ways to Work With Us</span>
-      <h2>Choose Your Path</h2>
-    </div>
-    <div class="grid grid-2">
-      <div class="card">
-        <div class="card-body" style="text-align:center; padding:36px 28px;">
-          <span class="eyebrow">In-Studio &amp; By Appointment</span>
-          <h3 style="margin:8px 0 12px;">Bespoke</h3>
-          <p style="color:var(--color-ink-soft); margin-bottom:20px;">A suit built entirely from scratch by a single tailor, refined across multiple in-person fittings. The full Lugo Tailoring experience.</p>
-          <a class="btn btn-outline" href="/bespoke">Explore Bespoke</a>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-body" style="text-align:center; padding:36px 28px;">
-          <span class="eyebrow">Configure Online</span>
-          <h3 style="margin:8px 0 12px;">Made-to-Measure</h3>
-          <p style="color:var(--color-ink-soft); margin-bottom:20px;">Pick your fabric and details visually, submit your own measurements, and pay online — no studio visit required to get started.</p>
-          <a class="btn btn-outline" href="/store">Design Online</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section section-alt">
-  <div class="container">
-    <div class="section-header center">
-      <span class="eyebrow">How Made-to-Measure Works</span>
-      <h2>Three Simple Steps</h2>
-    </div>
-    <div class="grid grid-3">
-      <div class="feature">
-        <div class="feature-icon">01</div>
-        <h3>Choose Your Fabric</h3>
-        <p>Browse a curated selection of wools, flannels, and blends sourced from renowned mills.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">02</div>
-        <h3>Configure the Details</h3>
-        <p>Select your lapel, fit, lining, and finishing touches — then submit your exact measurements.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">03</div>
-        <h3>Book Your Fitting</h3>
-        <p>Reserve a time with our tailors for a consultation, fitting, or final delivery.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section">
-  <div class="container grid grid-2" style="align-items:center;">
-    <div>
-      <span class="eyebrow">Craftsmanship</span>
-      <h2>Every stitch happens in our workshop.</h2>
-      <p style="color:var(--color-ink-soft);">From fabric sourcing to the final press, every Lugo garment is cut, sewn, and finished in-house — never outsourced. Buttonholes and linings are hand-finished by the same tailors who cut your pattern.</p>
-      <a class="btn btn-outline" href="/bespoke">See the Bespoke Process</a>
-    </div>
-    <img src="/images/about-atelier.png" alt="Lugo Tailoring workshop" style="border-radius:6px;">
-  </div>
-</section>
+<%
+  // Body content between the hero and the (database-driven) Recent Work
+  // gallery below is editable via Pages > Home in the admin — see
+  // partials/blocks.ejs for the block-type renderers. The gallery section
+  // stays hardcoded here (not a block) since its content comes from the
+  // GalleryImage model, not admin-authored text.
+  var homeBlocks = (content && content.blocks) || [];
+%>
+<%- include('partials/blocks', { blocks: homeBlocks.slice(0, 3) }) %>
 
 <section class="section section-alt">
   <div class="container">
@@ -100,14 +45,4 @@
   </div>
 </section>
 
-<section class="section">
-  <div class="container" style="text-align:center;">
-    <span class="eyebrow">Ready When You Are</span>
-    <h2>Start your custom suit today</h2>
-    <p style="max-width:520px;margin:0 auto 28px;color:var(--color-ink-soft);">Whether you know exactly what you want or need guidance from our tailors, we'll help you build something that fits perfectly.</p>
-    <div class="hero-actions" style="justify-content:center;">
-      <a class="btn btn-primary" href="/store">Browse Fabrics</a>
-      <a class="btn btn-outline" href="/contact">Talk to Us</a>
-    </div>
-  </div>
-</section>
+<%- include('partials/blocks', { blocks: homeBlocks.slice(3) }) %>

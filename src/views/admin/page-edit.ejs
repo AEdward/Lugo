@@ -73,3 +73,67 @@
     <button class="btn btn-primary" type="submit">Save Changes</button>
   </form>
 </div>
+
+<% if (blocksEnabled) { %>
+  <div class="panel" style="max-width:760px;">
+    <h3 style="margin-bottom:6px;">Content Blocks</h3>
+    <p style="color:var(--color-ink-soft); font-size:0.88rem; margin-bottom:20px;">
+      The sections rendered on this page below the header. Add, edit, reorder, or remove them —
+      changes appear on the live page immediately.
+    </p>
+
+    <% if (blocks && blocks.length) { %>
+      <table class="simple" style="margin-bottom:24px;">
+        <thead><tr><th>Type</th><th>Summary</th><th></th></tr></thead>
+        <tbody>
+          <% blocks.forEach(function(b, i) { %>
+            <tr>
+              <td style="text-transform:capitalize;"><%= b.type.replace('-', ' ') %></td>
+              <td><%= (b.data && (b.data.heading || (b.data.items && b.data.items.length + ' items') || (b.data.label))) || '—' %></td>
+              <td style="white-space:nowrap;">
+                <a class="btn btn-sm btn-outline" href="/admin/pages/<%= slug %>/blocks/<%= b.id %>/edit">Edit</a>
+                <% if (i > 0) { %>
+                  <form method="POST" action="/admin/pages/<%= slug %>/blocks/<%= b.id %>/move" style="display:inline;">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input type="hidden" name="direction" value="up">
+                    <button class="btn btn-sm btn-outline" type="submit" title="Move up">&uarr;</button>
+                  </form>
+                <% } %>
+                <% if (i < blocks.length - 1) { %>
+                  <form method="POST" action="/admin/pages/<%= slug %>/blocks/<%= b.id %>/move" style="display:inline;">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input type="hidden" name="direction" value="down">
+                    <button class="btn btn-sm btn-outline" type="submit" title="Move down">&darr;</button>
+                  </form>
+                <% } %>
+                <form method="POST" action="/admin/pages/<%= slug %>/blocks/<%= b.id %>/delete" style="display:inline;" onsubmit="return confirm('Remove this block?');">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <p style="color:var(--color-ink-soft); margin-bottom:24px;">No content blocks yet.</p>
+    <% } %>
+
+    <form method="GET" action="/admin/pages/<%= slug %>/blocks/new" style="display:flex; gap:10px; align-items:flex-end;">
+      <div class="field" style="margin:0;">
+        <label for="type">Add a Block</label>
+        <select id="type" name="type">
+          <option value="heading">Heading</option>
+          <option value="text">Text</option>
+          <option value="image">Image</option>
+          <option value="video">Video</option>
+          <option value="button">Button</option>
+          <option value="feature-grid">Feature Grid</option>
+          <option value="image-text">Image + Text</option>
+          <option value="cta">Call to Action</option>
+        </select>
+      </div>
+      <button class="btn btn-outline" type="submit">Add</button>
+    </form>
+  </div>
+<% } %>

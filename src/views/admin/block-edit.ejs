@@ -1,0 +1,172 @@
+<div class="admin-header">
+  <div>
+    <h1><%= blockId ? 'Edit' : 'Add' %> Block — <span style="text-transform:capitalize;"><%= type.replace('-', ' ') %></span></h1>
+  </div>
+  <a class="btn btn-outline" href="/admin/pages/<%= slug %>/edit">Back to Page</a>
+</div>
+
+<% if (error) { %>
+  <div class="alert alert-error"><%= error %></div>
+<% } %>
+
+<div class="panel" style="max-width:720px;">
+  <form method="POST" action="<%= blockId ? `/admin/pages/${slug}/blocks/${blockId}/edit` : `/admin/pages/${slug}/blocks/new` %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="type" value="<%= type %>">
+
+    <% if (type === 'heading') { %>
+      <div class="field"><label for="eyebrow">Eyebrow</label><input type="text" id="eyebrow" name="eyebrow" value="<%= data.eyebrow || '' %>"></div>
+      <div class="field"><label for="heading">Heading</label><input type="text" id="heading" name="heading" value="<%= data.heading || '' %>" required></div>
+      <div class="field">
+        <label for="align">Alignment</label>
+        <select id="align" name="align">
+          <option value="left" <%= (data.align || 'left') === 'left' ? 'selected' : '' %>>Left</option>
+          <option value="center" <%= data.align === 'center' ? 'selected' : '' %>>Center</option>
+        </select>
+      </div>
+
+    <% } else if (type === 'text') { %>
+      <div class="field">
+        <label for="body">Text</label>
+        <p style="color:var(--color-ink-soft); font-size:0.82rem; margin-bottom:6px;">Separate paragraphs with a blank line. Basic HTML (e.g. &lt;a&gt;, &lt;strong&gt;) is allowed.</p>
+        <textarea id="body" name="body" rows="8"><%= data.body || '' %></textarea>
+      </div>
+
+    <% } else if (type === 'image') { %>
+      <div class="field"><label for="src">Image URL</label><input type="text" id="src" name="src" value="<%= data.src || '' %>" placeholder="/uploads/your-image.jpg" required></div>
+      <div class="field"><label for="alt">Alt Text</label><input type="text" id="alt" name="alt" value="<%= data.alt || '' %>"></div>
+      <div class="field"><label for="caption">Caption (optional)</label><input type="text" id="caption" name="caption" value="<%= data.caption || '' %>"></div>
+
+    <% } else if (type === 'video') { %>
+      <div class="field"><label for="url">Video URL</label><input type="text" id="url" name="url" value="<%= data.url || '' %>" placeholder="/uploads/your-video.mp4" required></div>
+      <div class="field"><label for="caption">Caption (optional)</label><input type="text" id="caption" name="caption" value="<%= data.caption || '' %>"></div>
+
+    <% } else if (type === 'button') { %>
+      <div class="field"><label for="label">Button Label</label><input type="text" id="label" name="label" value="<%= data.label || '' %>" required></div>
+      <div class="field"><label for="href">Link</label><input type="text" id="href" name="href" value="<%= data.href || '' %>" required></div>
+      <div class="field">
+        <label for="style">Style</label>
+        <select id="style" name="style">
+          <option value="primary" <%= (data.style || 'primary') === 'primary' ? 'selected' : '' %>>Primary</option>
+          <option value="outline" <%= data.style === 'outline' ? 'selected' : '' %>>Outline</option>
+          <option value="accent" <%= data.style === 'accent' ? 'selected' : '' %>>Accent</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="align">Alignment</label>
+        <select id="align" name="align">
+          <option value="left" <%= data.align === 'left' ? 'selected' : '' %>>Left</option>
+          <option value="center" <%= (data.align || 'center') === 'center' ? 'selected' : '' %>>Center</option>
+          <option value="right" <%= data.align === 'right' ? 'selected' : '' %>>Right</option>
+        </select>
+      </div>
+
+    <% } else if (type === 'feature-grid') { %>
+      <div class="field"><label for="eyebrow">Eyebrow</label><input type="text" id="eyebrow" name="eyebrow" value="<%= data.eyebrow || '' %>"></div>
+      <div class="field"><label for="heading">Heading</label><input type="text" id="heading" name="heading" value="<%= data.heading || '' %>"></div>
+      <div class="grid grid-2">
+        <div class="field">
+          <label for="columns">Columns</label>
+          <select id="columns" name="columns">
+            <option value="2" <%= Number(data.columns) === 2 ? 'selected' : '' %>>2</option>
+            <option value="3" <%= (!data.columns || Number(data.columns) === 3) ? 'selected' : '' %>>3</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="sectionStyle">Background</label>
+          <select id="sectionStyle" name="sectionStyle">
+            <option value="" <%= !data.sectionStyle ? 'selected' : '' %>>Default</option>
+            <option value="alt" <%= data.sectionStyle === 'alt' ? 'selected' : '' %>>Alternate (shaded)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label><input type="checkbox" name="cardStyle" value="1" <%= data.cardStyle ? 'checked' : '' %> style="width:auto;display:inline-block;margin-right:8px;">Show items as cards (with each item's own button)</label>
+      </div>
+
+      <h3 style="margin:20px 0 12px;">Items</h3>
+      <p style="color:var(--color-ink-soft); font-size:0.82rem; margin-bottom:12px;">Leave a row's Title blank to omit it. Up to 8 items.</p>
+      <% for (var i = 0; i < 8; i++) { var it = (data.items && data.items[i]) || {}; %>
+        <div class="panel" style="background:var(--color-bg-alt); margin-bottom:12px; padding:16px;">
+          <div class="grid grid-2">
+            <div class="field"><label>Icon / Number</label><input type="text" name="items[<%= i %>][icon]" value="<%= it.icon || '' %>" placeholder="✦ or 01"></div>
+            <div class="field"><label>Item Eyebrow (optional, card style only)</label><input type="text" name="items[<%= i %>][eyebrow]" value="<%= it.eyebrow || '' %>"></div>
+          </div>
+          <div class="field"><label>Title</label><input type="text" name="items[<%= i %>][title]" value="<%= it.title || '' %>"></div>
+          <div class="field"><label>Text</label><textarea name="items[<%= i %>][text]"><%= it.text || '' %></textarea></div>
+          <div class="grid grid-2">
+            <div class="field"><label>Button Label (optional, card style only)</label><input type="text" name="items[<%= i %>][buttonLabel]" value="<%= it.buttonLabel || '' %>"></div>
+            <div class="field"><label>Button Link</label><input type="text" name="items[<%= i %>][buttonHref]" value="<%= it.buttonHref || '' %>"></div>
+          </div>
+        </div>
+      <% } %>
+
+    <% } else if (type === 'image-text') { %>
+      <div class="field"><label for="src">Image URL</label><input type="text" id="src" name="src" value="<%= data.src || '' %>" placeholder="/uploads/your-image.jpg" required></div>
+      <div class="field"><label for="alt">Image Alt Text</label><input type="text" id="alt" name="alt" value="<%= data.alt || '' %>"></div>
+      <div class="grid grid-2">
+        <div class="field">
+          <label for="imagePosition">Image Position</label>
+          <select id="imagePosition" name="imagePosition">
+            <option value="left" <%= (data.imagePosition || 'left') === 'left' ? 'selected' : '' %>>Left</option>
+            <option value="right" <%= data.imagePosition === 'right' ? 'selected' : '' %>>Right</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="sectionStyle">Background</label>
+          <select id="sectionStyle" name="sectionStyle">
+            <option value="" <%= !data.sectionStyle ? 'selected' : '' %>>Default</option>
+            <option value="alt" <%= data.sectionStyle === 'alt' ? 'selected' : '' %>>Alternate (shaded)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label for="eyebrow">Eyebrow</label><input type="text" id="eyebrow" name="eyebrow" value="<%= data.eyebrow || '' %>"></div>
+      <div class="field"><label for="heading">Heading</label><input type="text" id="heading" name="heading" value="<%= data.heading || '' %>"></div>
+
+      <h3 style="margin:20px 0 12px;">Paragraphs</h3>
+      <p style="color:var(--color-ink-soft); font-size:0.82rem; margin-bottom:12px;">Leave a row blank to omit it. Basic HTML (e.g. &lt;a&gt;) is allowed. Up to 3 paragraphs.</p>
+      <% for (var pi = 0; pi < 3; pi++) { var pp = (data.paragraphs && data.paragraphs[pi]) || {}; %>
+        <div class="field">
+          <textarea name="paragraphs[<%= pi %>][text]"><%= pp.text || '' %></textarea>
+          <label style="margin-top:4px;"><input type="checkbox" name="paragraphs[<%= pi %>][soft]" value="1" <%= pp.soft ? 'checked' : '' %> style="width:auto;display:inline-block;margin-right:8px;">Muted color</label>
+        </div>
+      <% } %>
+
+      <div class="grid grid-2">
+        <div class="field"><label>Button Label (optional)</label><input type="text" name="buttonLabel" value="<%= data.buttonLabel || '' %>"></div>
+        <div class="field"><label>Button Link</label><input type="text" name="buttonHref" value="<%= data.buttonHref || '' %>"></div>
+      </div>
+
+    <% } else if (type === 'cta') { %>
+      <div class="field"><label for="eyebrow">Eyebrow (optional)</label><input type="text" id="eyebrow" name="eyebrow" value="<%= data.eyebrow || '' %>"></div>
+      <div class="field"><label for="heading">Heading</label><input type="text" id="heading" name="heading" value="<%= data.heading || '' %>" required></div>
+      <div class="field"><label for="text">Text</label><textarea id="text" name="text"><%= data.text || '' %></textarea></div>
+      <div class="field">
+        <label for="sectionStyle">Background</label>
+        <select id="sectionStyle" name="sectionStyle">
+          <option value="" <%= !data.sectionStyle ? 'selected' : '' %>>Default</option>
+          <option value="alt" <%= data.sectionStyle === 'alt' ? 'selected' : '' %>>Alternate (shaded)</option>
+        </select>
+      </div>
+
+      <h3 style="margin:20px 0 12px;">Buttons</h3>
+      <p style="color:var(--color-ink-soft); font-size:0.82rem; margin-bottom:12px;">Leave a row's label blank to omit it. Up to 2 buttons.</p>
+      <% for (var bi = 0; bi < 2; bi++) { var bb = (data.buttons && data.buttons[bi]) || {}; %>
+        <div class="grid grid-3" style="margin-bottom:10px;">
+          <div class="field"><label>Label</label><input type="text" name="buttons[<%= bi %>][label]" value="<%= bb.label || '' %>"></div>
+          <div class="field"><label>Link</label><input type="text" name="buttons[<%= bi %>][href]" value="<%= bb.href || '' %>"></div>
+          <div class="field">
+            <label>Style</label>
+            <select name="buttons[<%= bi %>][style]">
+              <option value="primary" <%= (bb.style || 'primary') === 'primary' ? 'selected' : '' %>>Primary</option>
+              <option value="outline" <%= bb.style === 'outline' ? 'selected' : '' %>>Outline</option>
+              <option value="accent" <%= bb.style === 'accent' ? 'selected' : '' %>>Accent</option>
+            </select>
+          </div>
+        </div>
+      <% } %>
+    <% } %>
+
+    <button class="btn btn-primary" type="submit" style="margin-top:12px;"><%= blockId ? 'Save Block' : 'Add Block' %></button>
+  </form>
+</div>

@@ -1,0 +1,118 @@
+<% (blocks || []).forEach(function(block) { %>
+  <% var d = block.data || {}; %>
+
+  <% if (block.type === 'heading') { %>
+    <section class="section">
+      <div class="container" style="text-align:<%= d.align || 'left' %>;">
+        <% if (d.eyebrow) { %><span class="eyebrow"><%= d.eyebrow %></span><% } %>
+        <h2><%= d.heading %></h2>
+      </div>
+    </section>
+
+  <% } else if (block.type === 'text') { %>
+    <section class="section">
+      <div class="container">
+        <% (d.body || '').split(/\n\s*\n/).forEach(function(para) { if (para.trim()) { %>
+          <p><%- para %></p>
+        <% } }); %>
+      </div>
+    </section>
+
+  <% } else if (block.type === 'image') { %>
+    <section class="section">
+      <div class="container" style="text-align:center;">
+        <img src="<%= d.src %>" alt="<%= d.alt || '' %>" style="max-width:100%;border-radius:6px;">
+        <% if (d.caption) { %><p style="color:var(--color-ink-soft);margin-top:12px;"><%= d.caption %></p><% } %>
+      </div>
+    </section>
+
+  <% } else if (block.type === 'video') { %>
+    <section class="section">
+      <div class="container" style="text-align:center;">
+        <video src="<%= d.url %>" controls style="max-width:100%;border-radius:6px;"></video>
+        <% if (d.caption) { %><p style="color:var(--color-ink-soft);margin-top:12px;"><%= d.caption %></p><% } %>
+      </div>
+    </section>
+
+  <% } else if (block.type === 'button') { %>
+    <section class="section">
+      <div class="container" style="text-align:<%= d.align || 'center' %>;">
+        <a class="btn btn-<%= d.style || 'primary' %>" href="<%= d.href %>"><%= d.label %></a>
+      </div>
+    </section>
+
+  <% } else if (block.type === 'feature-grid') { %>
+    <section class="section<%= d.sectionStyle === 'alt' ? ' section-alt' : '' %>"<% if (d.paddingTop) { %> style="padding-top:24px;"<% } %>>
+      <div class="container">
+        <% if (d.eyebrow || d.heading) { %>
+          <div class="section-header center">
+            <% if (d.eyebrow) { %><span class="eyebrow"><%= d.eyebrow %></span><% } %>
+            <% if (d.heading) { %><h2><%= d.heading %></h2><% } %>
+          </div>
+        <% } %>
+        <div class="grid grid-<%= d.columns || 3 %>">
+          <% (d.items || []).forEach(function(item) { %>
+            <% if (d.cardStyle) { %>
+              <div class="card">
+                <div class="card-body" style="text-align:center; padding:36px 28px;">
+                  <% if (item.eyebrow) { %><span class="eyebrow"><%= item.eyebrow %></span><% } %>
+                  <h3 style="margin:8px 0 12px;"><%= item.title %></h3>
+                  <p style="color:var(--color-ink-soft); margin-bottom:20px;"><%- item.text %></p>
+                  <% if (item.buttonLabel && item.buttonHref) { %>
+                    <a class="btn btn-outline" href="<%= item.buttonHref %>"><%= item.buttonLabel %></a>
+                  <% } %>
+                </div>
+              </div>
+            <% } else { %>
+              <div class="feature">
+                <div class="feature-icon"><%= item.icon || '✦' %></div>
+                <h3><%= item.title %></h3>
+                <p><%- item.text %></p>
+              </div>
+            <% } %>
+          <% }); %>
+        </div>
+      </div>
+    </section>
+
+  <% } else if (block.type === 'image-text') { %>
+    <section class="section<%= d.sectionStyle === 'alt' ? ' section-alt' : '' %>">
+      <div class="container grid grid-2" style="align-items:center;">
+        <% if (d.imagePosition !== 'right') { %>
+          <img src="<%= d.src %>" alt="<%= d.alt || '' %>" style="border-radius:6px;">
+        <% } %>
+        <div>
+          <% if (d.eyebrow) { %><span class="eyebrow"><%= d.eyebrow %></span><% } %>
+          <% if (d.heading) { %><h2><%= d.heading %></h2><% } %>
+          <% (d.paragraphs || []).forEach(function(p) { %>
+            <p<% if (p.soft) { %> style="color:var(--color-ink-soft);"<% } %>><%- p.text %></p>
+          <% }); %>
+          <% if (d.buttonLabel && d.buttonHref) { %>
+            <a class="btn btn-outline" href="<%= d.buttonHref %>"><%= d.buttonLabel %></a>
+          <% } %>
+        </div>
+        <% if (d.imagePosition === 'right') { %>
+          <img src="<%= d.src %>" alt="<%= d.alt || '' %>" style="border-radius:6px;">
+        <% } %>
+      </div>
+    </section>
+
+  <% } else if (block.type === 'cta') { %>
+    <section class="section<%= d.sectionStyle === 'alt' ? ' section-alt' : '' %>">
+      <div class="container" style="text-align:center;">
+        <% if (d.eyebrow) { %><span class="eyebrow"><%= d.eyebrow %></span><% } %>
+        <h2><%= d.heading %></h2>
+        <% if (d.text) { %>
+          <p style="max-width:<%= d.maxWidth || 480 %>px;margin:0 auto <%= d.textMargin || ((d.buttons && d.buttons.length > 1) ? 28 : 24) %>px;color:var(--color-ink-soft);"><%- d.text %></p>
+        <% } %>
+        <% if (d.buttons && d.buttons.length > 1) { %>
+          <div class="hero-actions" style="justify-content:center;">
+            <% d.buttons.forEach(function(b) { %><a class="btn btn-<%= b.style || 'primary' %>" href="<%= b.href %>"><%= b.label %></a><% }); %>
+          </div>
+        <% } else if (d.buttons && d.buttons.length === 1) { %>
+          <a class="btn btn-<%= d.buttons[0].style || 'primary' %>" href="<%= d.buttons[0].href %>"><%= d.buttons[0].label %></a>
+        <% } %>
+      </div>
+    </section>
+  <% } %>
+<% }); %>

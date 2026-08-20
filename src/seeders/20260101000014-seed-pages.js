@@ -1,3 +1,5 @@
+const pageBlocksSeed = require('../data/pageBlocksSeed');
+
 module.exports = {
   up: async (queryInterface) => {
     const now = new Date();
@@ -13,6 +15,7 @@ module.exports = {
           intro:
             'Lugo Tailoring crafts custom suits from the finest fabrics — fitted in-studio or configured entirely online, with every measurement and detail chosen by you.',
           heroVideoUrl: '',
+          blocks: pageBlocksSeed.home,
         },
       },
       {
@@ -24,6 +27,7 @@ module.exports = {
           heading: 'Tailoring, the way it used to be.',
           intro:
             'Lugo Tailoring was founded on a simple idea: a suit should be built entirely around the person wearing it — not the other way around.',
+          blocks: pageBlocksSeed.about,
         },
       },
       {
@@ -35,6 +39,7 @@ module.exports = {
           heading: 'Bespoke Tailoring',
           intro:
             'A suit built entirely from scratch, around you — cut by hand, fitted in person, and finished in our studio. This is the full Lugo Tailoring experience, from first consultation to final stitch.',
+          blocks: pageBlocksSeed.bespoke,
         },
       },
       {

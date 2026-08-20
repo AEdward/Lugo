@@ -6,48 +6,4 @@
   </div>
 </section>
 
-<section class="section">
-  <div class="container grid grid-2" style="align-items:center;">
-    <img src="/images/about-atelier.png" alt="Lugo Tailoring atelier" style="border-radius:6px;">
-    <div>
-      <span class="eyebrow">Craftsmanship</span>
-      <h2>Every stitch, considered.</h2>
-      <p>Our tailors bring together decades of experience with a modern, client-first process. Each garment begins with a conversation — about how you live, how you move, and how you want to look — before a single measurement is taken.</p>
-      <p>From fabric sourcing to the final fitting, every step happens with the same attention to detail that has defined bespoke tailoring for generations.</p>
-    </div>
-  </div>
-</section>
-
-<section class="section section-alt">
-  <div class="container">
-    <div class="section-header center">
-      <span class="eyebrow">What We Believe</span>
-      <h2>The Lugo Standard</h2>
-    </div>
-    <div class="grid grid-3">
-      <div class="feature">
-        <div class="feature-icon">✦</div>
-        <h3>Precision Fit</h3>
-        <p>Every order is built from your exact measurements — no standard sizing, ever.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">✦</div>
-        <h3>Honest Materials</h3>
-        <p>We work only with mills and fabrics we'd choose for ourselves.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">✦</div>
-        <h3>Personal Service</h3>
-        <p>From your first fitting to final delivery, you work with the same dedicated team.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section" style="text-align:center;">
-  <div class="container">
-    <h2>Come visit the studio</h2>
-    <p style="max-width:480px;margin:0 auto 24px;color:var(--color-ink-soft);">Book a consultation and let's start designing your next suit together.</p>
-    <a class="btn btn-primary" href="/booking">Book an Appointment</a>
-  </div>
-</section>
+<%- include('partials/blocks', { blocks: (content && content.blocks) || [] }) %>
