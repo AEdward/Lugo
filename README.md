@@ -8,6 +8,10 @@ Website for Lugo Tailoring — a custom luxury suit tailoring studio. Built with
 - **Appointment booking** — customers pick an open time slot; the request is held as "pending" until an admin approves it. Unapproved holds automatically expire (default 24h) and free the slot back up.
 - **Custom suit ordering** — customers choose a fabric, configure design options (lapel, buttons, lining, fit, monogram, pocket), and submit their exact measurements, then pay online via [Chapa](https://developer.chapa.co).
 - **Admin dashboard** (`/admin`) — approve/reject bookings, manage orders and fulfillment status, manage fabrics, design options, and gallery images, and read contact form messages.
+- **Admin user management** (`/admin/users`) — add/edit/delete other admin logins, with role (admin/staff), a self-delete guard, and a last-admin-standing guard.
+- **Pages** (`/admin/pages`) — edit the eyebrow/heading/intro copy and SEO title/description for Home, About, Bespoke, Gallery, and Contact; the homepage hero video also lives here now (`/admin/pages/home/edit`), not under Settings.
+- **Site Settings** (`/admin/settings`) — site name, contact email/phone/address, and social links, shown across the footer/contact page.
+- **SEO** — per-page meta title/description (editable via Pages) plus Open Graph/Twitter card tags, `/sitemap.xml`, and `/robots.txt`.
 
 ## Tech stack
 

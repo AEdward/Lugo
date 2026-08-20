@@ -1,8 +1,8 @@
 <section class="page-header">
   <div class="container">
-    <span class="eyebrow">Our Story</span>
-    <h1>Tailoring, the way it used to be.</h1>
-    <p>Lugo Tailoring was founded on a simple idea: a suit should be built entirely around the person wearing it — not the other way around.</p>
+    <span class="eyebrow"><%= (content && content.eyebrow) || 'Our Story' %></span>
+    <h1><%= (content && content.heading) || 'Tailoring, the way it used to be.' %></h1>
+    <p><%= (content && content.intro) || 'Lugo Tailoring was founded on a simple idea: a suit should be built entirely around the person wearing it — not the other way around.' %></p>
   </div>
 </section>
 

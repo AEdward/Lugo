@@ -1,8 +1,10 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const bcrypt = require('bcryptjs');
+const { body, validationResult } = require('express-validator');
 const { Op } = require('sequelize');
-const { Booking, Order, Fabric, DesignOption, GalleryImage, ContactMessage } = require('../models');
+const { Booking, Order, Fabric, DesignOption, GalleryImage, ContactMessage, User, Page } = require('../models');
 const { requireAdmin } = require('../middleware/auth');
 const { doubleCsrfProtection } = require('../middleware/csrf');
 const upload = require('../middleware/upload');
@@ -406,15 +408,212 @@ router.post('/admin/messages/:id/delete', async (req, res, next) => {
   }
 });
 
-// ---------- Site settings ----------
+// ---------- Admin users ----------
 
-router.get('/admin/settings', async (req, res, next) => {
+router.get('/admin/users', async (req, res, next) => {
   try {
-    const heroVideoUrl = await settingsService.get('heroVideoUrl');
-    res.render('admin/settings', {
-      title: 'Settings — Admin',
+    const users = await User.findAll({ order: [['name', 'ASC']] });
+    res.render('admin/users', { title: 'Users — Admin', layout: 'layouts/admin', users });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/admin/users/new', (req, res) => {
+  res.render('admin/user-form', {
+    title: 'Add User — Admin',
+    layout: 'layouts/admin',
+    user: null,
+    errors: [],
+    values: {},
+  });
+});
+
+router.post(
+  '/admin/users',
+  [
+    body('name').trim().notEmpty().withMessage('Please enter a name.'),
+    body('email').trim().isEmail().withMessage('Please enter a valid email.'),
+    body('role').isIn(['admin', 'staff']).withMessage('Please choose a valid role.'),
+    body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters.'),
+  ],
+  async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).render('admin/user-form', {
+        title: 'Add User — Admin',
+        layout: 'layouts/admin',
+        user: null,
+        errors: errors.array(),
+        values: req.body,
+      });
+    }
+
+    try {
+      const email = req.body.email.trim().toLowerCase();
+      const existing = await User.findOne({ where: { email } });
+      if (existing) {
+        return res.status(400).render('admin/user-form', {
+          title: 'Add User — Admin',
+          layout: 'layouts/admin',
+          user: null,
+          errors: [{ msg: 'A user with that email already exists.' }],
+          values: req.body,
+        });
+      }
+
+      await User.create({
+        name: req.body.name,
+        email,
+        role: req.body.role,
+        passwordHash: await bcrypt.hash(req.body.password, 10),
+      });
+
+      res.redirect('/admin/users');
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.get('/admin/users/:id/edit', async (req, res, next) => {
+  try {
+    const user = await User.findByPk(req.params.id);
+    if (!user) return res.status(404).render('errors/404', { title: 'Not found' });
+    res.render('admin/user-form', {
+      title: 'Edit User — Admin',
       layout: 'layouts/admin',
-      heroVideoUrl,
+      user,
+      errors: [],
+      values: { name: user.name, email: user.email, role: user.role },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post(
+  '/admin/users/:id/edit',
+  [
+    body('name').trim().notEmpty().withMessage('Please enter a name.'),
+    body('email').trim().isEmail().withMessage('Please enter a valid email.'),
+    body('role').isIn(['admin', 'staff']).withMessage('Please choose a valid role.'),
+    body('password').optional({ checkFalsy: true }).isLength({ min: 8 }).withMessage('Password must be at least 8 characters.'),
+  ],
+  async (req, res, next) => {
+    try {
+      const user = await User.findByPk(req.params.id);
+      if (!user) return res.status(404).render('errors/404', { title: 'Not found' });
+
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).render('admin/user-form', {
+          title: 'Edit User — Admin',
+          layout: 'layouts/admin',
+          user,
+          errors: errors.array(),
+          values: req.body,
+        });
+      }
+
+      const email = req.body.email.trim().toLowerCase();
+      const existing = await User.findOne({ where: { email, id: { [Op.ne]: user.id } } });
+      if (existing) {
+        return res.status(400).render('admin/user-form', {
+          title: 'Edit User — Admin',
+          layout: 'layouts/admin',
+          user,
+          errors: [{ msg: 'A user with that email already exists.' }],
+          values: req.body,
+        });
+      }
+
+      // Demoting/renaming yourself away from admin would lock you out of user
+      // management immediately — block it the same way self-delete is blocked.
+      if (user.id === req.session.adminUserId && req.body.role !== 'admin') {
+        return res.status(400).render('admin/user-form', {
+          title: 'Edit User — Admin',
+          layout: 'layouts/admin',
+          user,
+          errors: [{ msg: 'You cannot remove your own admin role.' }],
+          values: req.body,
+        });
+      }
+
+      user.name = req.body.name;
+      user.email = email;
+      user.role = req.body.role;
+      if (req.body.password) {
+        user.passwordHash = await bcrypt.hash(req.body.password, 10);
+      }
+      await user.save();
+
+      // Keep the session's cached copy in sync so the sidebar/name update immediately.
+      if (user.id === req.session.adminUserId) {
+        req.session.adminUser = { id: user.id, name: user.name, email: user.email, role: user.role };
+      }
+
+      res.redirect('/admin/users');
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.post('/admin/users/:id/delete', async (req, res, next) => {
+  try {
+    const targetId = parseInt(req.params.id, 10);
+
+    if (targetId === req.session.adminUserId) {
+      req.session.flashError = 'You cannot delete your own account while logged in as it.';
+      return res.redirect('/admin/users');
+    }
+
+    const totalUsers = await User.count();
+    if (totalUsers <= 1) {
+      req.session.flashError = 'At least one admin user must remain.';
+      return res.redirect('/admin/users');
+    }
+
+    await User.destroy({ where: { id: targetId } });
+    res.redirect('/admin/users');
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------- Pages ----------
+
+const PAGE_LABELS = { home: 'Home', about: 'About', bespoke: 'Bespoke', gallery: 'Gallery', contact: 'Contact' };
+const PAGE_SLUGS = Object.keys(PAGE_LABELS);
+
+router.get('/admin/pages', async (req, res, next) => {
+  try {
+    const pages = await Page.findAll({ where: { slug: { [Op.in]: PAGE_SLUGS } } });
+    const bySlug = {};
+    pages.forEach((p) => {
+      bySlug[p.slug] = p;
+    });
+    const rows = PAGE_SLUGS.map((slug) => ({ slug, label: PAGE_LABELS[slug], page: bySlug[slug] || null }));
+    res.render('admin/pages', { title: 'Pages — Admin', layout: 'layouts/admin', rows });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/admin/pages/:slug/edit', async (req, res, next) => {
+  try {
+    const { slug } = req.params;
+    if (!PAGE_LABELS[slug]) return res.status(404).render('errors/404', { title: 'Not found' });
+
+    const page = await Page.findOne({ where: { slug } });
+    res.render('admin/page-edit', {
+      title: `${PAGE_LABELS[slug]} Page — Admin`,
+      layout: 'layouts/admin',
+      slug,
+      label: PAGE_LABELS[slug],
+      content: page ? page.content : {},
+      saved: req.query.saved === '1',
       error: null,
     });
   } catch (err) {
@@ -422,14 +621,40 @@ router.get('/admin/settings', async (req, res, next) => {
   }
 });
 
-router.post('/admin/settings/hero-video', (req, res, next) => {
+router.post('/admin/pages/:slug/edit', async (req, res, next) => {
+  try {
+    const { slug } = req.params;
+    if (!PAGE_LABELS[slug]) return res.status(404).render('errors/404', { title: 'Not found' });
+
+    const [page] = await Page.findOrCreate({ where: { slug }, defaults: { content: {} } });
+    const existing = page.content;
+    page.content = {
+      ...existing,
+      seoTitle: (req.body.seoTitle || '').trim(),
+      seoDescription: (req.body.seoDescription || '').trim(),
+      eyebrow: (req.body.eyebrow || '').trim(),
+      heading: (req.body.heading || '').trim(),
+      intro: (req.body.intro || '').trim(),
+    };
+    await page.save();
+
+    res.redirect(`/admin/pages/${slug}/edit?saved=1`);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/admin/pages/home/hero-video', (req, res, next) => {
   videoUpload.single('video')(req, res, (err) => {
     if (err) {
-      return settingsService.get('heroVideoUrl').then((heroVideoUrl) =>
-        res.status(400).render('admin/settings', {
-          title: 'Settings — Admin',
+      return Page.findOne({ where: { slug: 'home' } }).then((page) =>
+        res.status(400).render('admin/page-edit', {
+          title: 'Home Page — Admin',
           layout: 'layouts/admin',
-          heroVideoUrl,
+          slug: 'home',
+          label: 'Home',
+          content: page ? page.content : {},
+          saved: false,
           error: err.message,
         })
       );
@@ -441,16 +666,18 @@ router.post('/admin/settings/hero-video', (req, res, next) => {
       if (csrfErr) return next(csrfErr);
 
       try {
-        if (!req.file) return res.redirect('/admin/settings');
+        if (!req.file) return res.redirect('/admin/pages/home/edit');
 
-        const previousUrl = await settingsService.get('heroVideoUrl');
-        await settingsService.set('heroVideoUrl', `/uploads/${req.file.filename}`);
+        const [page] = await Page.findOrCreate({ where: { slug: 'home' }, defaults: { content: {} } });
+        const previousUrl = page.content.heroVideoUrl;
+        page.content = { ...page.content, heroVideoUrl: `/uploads/${req.file.filename}` };
+        await page.save();
 
         if (previousUrl && previousUrl.startsWith('/uploads/')) {
           fs.unlink(path.join(__dirname, '..', 'public', previousUrl), () => {});
         }
 
-        res.redirect('/admin/settings');
+        res.redirect('/admin/pages/home/edit');
       } catch (err2) {
         next(err2);
       }
@@ -458,14 +685,52 @@ router.post('/admin/settings/hero-video', (req, res, next) => {
   });
 });
 
-router.post('/admin/settings/hero-video/remove', async (req, res, next) => {
+router.post('/admin/pages/home/hero-video/remove', async (req, res, next) => {
   try {
-    const previousUrl = await settingsService.get('heroVideoUrl');
-    if (previousUrl && previousUrl.startsWith('/uploads/')) {
-      fs.unlink(path.join(__dirname, '..', 'public', previousUrl), () => {});
+    const page = await Page.findOne({ where: { slug: 'home' } });
+    if (page) {
+      const previousUrl = page.content.heroVideoUrl;
+      if (previousUrl && previousUrl.startsWith('/uploads/')) {
+        fs.unlink(path.join(__dirname, '..', 'public', previousUrl), () => {});
+      }
+      page.content = { ...page.content, heroVideoUrl: '' };
+      await page.save();
     }
-    await settingsService.unset('heroVideoUrl');
-    res.redirect('/admin/settings');
+    res.redirect('/admin/pages/home/edit');
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------- Site settings ----------
+// (The homepage hero video used to live here — it's now under Pages > Home,
+// since it's page content, not site configuration.)
+
+router.get('/admin/settings', async (req, res, next) => {
+  try {
+    const siteSettings = await settingsService.getSiteSettings();
+    res.render('admin/settings', {
+      title: 'Settings — Admin',
+      layout: 'layouts/admin',
+      values: siteSettings,
+      saved: req.query.saved === '1',
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/admin/settings', async (req, res, next) => {
+  try {
+    const fields = Object.keys(settingsService.SITE_SETTING_DEFAULTS);
+    // Sequential, not Promise.all: these are separate writes to the same
+    // key-value table, and firing them concurrently risks lock contention
+    // (observed as SQLITE_BUSY under sqlite; unnecessary either way for a
+    // handful of small settings writes with no latency requirement).
+    for (const key of fields) {
+      await settingsService.set(key, (req.body[key] || '').trim());
+    }
+    res.redirect('/admin/settings?saved=1');
   } catch (err) {
     next(err);
   }

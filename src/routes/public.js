@@ -1,9 +1,10 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
-const { GalleryImage, ContactMessage } = require('../models');
+const { GalleryImage, ContactMessage, Page, Fabric } = require('../models');
 const settingsService = require('../services/settingsService');
 const notifications = require('../services/notifications');
 const { formLimiter } = require('../middleware/rateLimit');
+const { buildPageMeta } = require('../services/pageService');
 
 const router = express.Router();
 
@@ -11,22 +12,54 @@ const LEGAL_LAST_UPDATED = 'August 20, 2026';
 
 router.get('/', async (req, res, next) => {
   try {
-    const [featured, heroVideoUrl] = await Promise.all([
+    const [featured, homePage, legacyHeroVideoUrl] = await Promise.all([
       GalleryImage.findAll({ order: [['sortOrder', 'ASC']], limit: 6 }),
+      Page.findOne({ where: { slug: 'home' } }),
       settingsService.get('heroVideoUrl'),
     ]);
-    res.render('home', { title: 'Lugo Tailoring — Bespoke Luxury Suits', featured, heroVideoUrl });
+    const content = homePage ? homePage.content : {};
+    // Sites that uploaded a hero video before Pages existed still have it
+    // stored under the old Settings key — fall back to that if Pages has none.
+    const heroVideoUrl = content.heroVideoUrl || legacyHeroVideoUrl;
+
+    res.render('home', {
+      title: content.seoTitle || 'Lugo Tailoring — Bespoke Luxury Suits',
+      pageMeta: buildPageMeta(content, 'Lugo Tailoring — Bespoke Luxury Suits'),
+      featured,
+      heroVideoUrl,
+      content,
+    });
   } catch (err) {
     next(err);
   }
 });
 
-router.get('/about', (req, res) => {
-  res.render('about', { title: 'About — Lugo Tailoring' });
+router.get('/about', async (req, res, next) => {
+  try {
+    const page = await Page.findOne({ where: { slug: 'about' } });
+    const content = page ? page.content : {};
+    res.render('about', {
+      title: content.seoTitle || 'About — Lugo Tailoring',
+      pageMeta: buildPageMeta(content, 'About — Lugo Tailoring'),
+      content,
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.get('/bespoke', (req, res) => {
-  res.render('bespoke', { title: 'Bespoke Tailoring — Lugo Tailoring' });
+router.get('/bespoke', async (req, res, next) => {
+  try {
+    const page = await Page.findOne({ where: { slug: 'bespoke' } });
+    const content = page ? page.content : {};
+    res.render('bespoke', {
+      title: content.seoTitle || 'Bespoke Tailoring — Lugo Tailoring',
+      pageMeta: buildPageMeta(content, 'Bespoke Tailoring — Lugo Tailoring'),
+      content,
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.get('/terms', (req, res) => {
@@ -43,20 +76,37 @@ router.get('/refund-policy', (req, res) => {
 
 router.get('/gallery', async (req, res, next) => {
   try {
-    const images = await GalleryImage.findAll({ order: [['sortOrder', 'ASC']] });
-    res.render('gallery', { title: 'Gallery — Lugo Tailoring', images });
+    const [images, page] = await Promise.all([
+      GalleryImage.findAll({ order: [['sortOrder', 'ASC']] }),
+      Page.findOne({ where: { slug: 'gallery' } }),
+    ]);
+    const content = page ? page.content : {};
+    res.render('gallery', {
+      title: content.seoTitle || 'Gallery — Lugo Tailoring',
+      pageMeta: buildPageMeta(content, 'Gallery — Lugo Tailoring'),
+      images,
+      content,
+    });
   } catch (err) {
     next(err);
   }
 });
 
-router.get('/contact', (req, res) => {
-  res.render('contact', {
-    title: 'Contact — Lugo Tailoring',
-    values: {},
-    errors: [],
-    success: req.query.sent === '1',
-  });
+router.get('/contact', async (req, res, next) => {
+  try {
+    const page = await Page.findOne({ where: { slug: 'contact' } });
+    const content = page ? page.content : {};
+    res.render('contact', {
+      title: content.seoTitle || 'Contact — Lugo Tailoring',
+      pageMeta: buildPageMeta(content, 'Contact — Lugo Tailoring'),
+      content,
+      values: {},
+      errors: [],
+      success: req.query.sent === '1',
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.post(
@@ -71,8 +121,12 @@ router.post(
   async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      const page = await Page.findOne({ where: { slug: 'contact' } });
+      const content = page ? page.content : {};
       return res.status(400).render('contact', {
-        title: 'Contact — Lugo Tailoring',
+        title: content.seoTitle || 'Contact — Lugo Tailoring',
+        pageMeta: buildPageMeta(content, 'Contact — Lugo Tailoring'),
+        content,
         values: req.body,
         errors: errors.array(),
         success: false,
@@ -89,5 +143,35 @@ router.post(
     }
   }
 );
+
+const STATIC_SITEMAP_PATHS = ['/', '/about', '/bespoke', '/store', '/gallery', '/booking', '/contact', '/terms', '/privacy', '/refund-policy'];
+
+router.get('/robots.txt', (req, res) => {
+  res.type('text/plain').send(
+    ['User-agent: *', 'Allow: /', 'Disallow: /admin', 'Disallow: /account', `Sitemap: ${res.locals.siteBaseUrl}/sitemap.xml`].join('\n')
+  );
+});
+
+router.get('/sitemap.xml', async (req, res, next) => {
+  try {
+    const base = res.locals.siteBaseUrl;
+    const fabrics = await Fabric.findAll({ where: { inStock: true }, attributes: ['id'] });
+
+    const urls = [
+      ...STATIC_SITEMAP_PATHS,
+      ...fabrics.map((f) => `/store/fabrics/${f.id}`),
+    ];
+
+    const body =
+      '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+      urls.map((u) => `  <url><loc>${base}${u}</loc></url>`).join('\n') +
+      '\n</urlset>';
+
+    res.type('application/xml').send(body);
+  } catch (err) {
+    next(err);
+  }
+});
 
 module.exports = router;

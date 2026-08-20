@@ -9,6 +9,7 @@ const expressLayouts = require('express-ejs-layouts');
 const { attachAdminLocals, attachCustomerLocals } = require('./middleware/auth');
 const { doubleCsrfProtection, attachCsrfToken, invalidCsrfTokenError } = require('./middleware/csrf');
 const { generalLimiter } = require('./middleware/rateLimit');
+const settingsService = require('./services/settingsService');
 const publicRoutes = require('./routes/public');
 const bookingRoutes = require('./routes/booking');
 const storeRoutes = require('./routes/store');
@@ -61,6 +62,11 @@ function createApp() {
     res.locals.flashError = null;
     // Public pages only (layouts/admin.ejs doesn't include the analytics partial).
     res.locals.gaMeasurementId = process.env.GA_MEASUREMENT_ID || null;
+    res.locals.siteBaseUrl = (process.env.BASE_URL || '').replace(/\/$/, '');
+    // Placeholder so error pages never crash on a missing siteSettings even if
+    // something downstream fails before the real lookup below runs; overwritten
+    // with the actual DB-backed values further down once session is available.
+    res.locals.siteSettings = settingsService.SITE_SETTING_DEFAULTS;
     next();
   });
 
@@ -97,6 +103,14 @@ function createApp() {
     res.locals.cartCount = (req.session.cart || []).length;
     res.locals.flashError = req.session.flashError || null;
     delete req.session.flashError;
+    next();
+  });
+  app.use(async (req, res, next) => {
+    try {
+      res.locals.siteSettings = await settingsService.getSiteSettings();
+    } catch (err) {
+      res.locals.siteSettings = settingsService.SITE_SETTING_DEFAULTS;
+    }
     next();
   });
 

@@ -5,9 +5,9 @@
     <img class="hero-bg" src="/images/hero.png" alt="">
   <% } %>
   <div class="hero-overlay">
-    <span class="eyebrow" style="color:#e0b9b0;">Bespoke &middot; Handcrafted &middot; Made to Measure</span>
-    <h1>Luxury tailoring, cut precisely to you.</h1>
-    <p class="lead">Lugo Tailoring crafts custom suits from the finest fabrics — fitted in-studio or configured entirely online, with every measurement and detail chosen by you.</p>
+    <span class="eyebrow" style="color:#e0b9b0;"><%= (content && content.eyebrow) || 'Bespoke · Handcrafted · Made to Measure' %></span>
+    <h1><%= (content && content.heading) || 'Luxury tailoring, cut precisely to you.' %></h1>
+    <p class="lead"><%= (content && content.intro) || 'Lugo Tailoring crafts custom suits from the finest fabrics — fitted in-studio or configured entirely online, with every measurement and detail chosen by you.' %></p>
     <div class="hero-actions">
       <a class="btn btn-accent" href="/booking">Book a Fitting</a>
       <a class="btn btn-outline" style="border-color:white;color:white;" href="/store">Design Your Suit</a>

@@ -1,0 +1,37 @@
+<div class="admin-header">
+  <div>
+    <h1>Users</h1>
+    <p style="color:var(--color-ink-soft);">Manage who can sign in to the admin dashboard.</p>
+  </div>
+  <a class="btn btn-primary" href="/admin/users/new">Add User</a>
+</div>
+
+<% if (typeof flashError !== 'undefined' && flashError) { %>
+  <div class="alert alert-error"><%= flashError %></div>
+<% } %>
+
+<div class="panel">
+  <table class="simple">
+    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th></th></tr></thead>
+    <tbody>
+      <% users.forEach(function(u) { %>
+        <tr>
+          <td><%= u.name %><% if (u.id === currentAdmin.id) { %> <span style="color:var(--color-ink-soft); font-size:0.8rem;">(you)</span><% } %></td>
+          <td><%= u.email %></td>
+          <td style="text-transform:capitalize;"><%= u.role %></td>
+          <td>
+            <div class="inline-actions">
+              <a class="btn btn-sm btn-outline" href="/admin/users/<%= u.id %>/edit">Edit</a>
+              <% if (u.id !== currentAdmin.id) { %>
+                <form method="POST" action="/admin/users/<%= u.id %>/delete" onsubmit="return confirm('Delete this user?');">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+                </form>
+              <% } %>
+            </div>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>

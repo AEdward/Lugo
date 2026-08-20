@@ -1,0 +1,18 @@
+<%
+  const _site = (typeof siteSettings !== 'undefined' && siteSettings) ? siteSettings : { siteName: 'Lugo Tailoring' };
+  const _base = typeof siteBaseUrl !== 'undefined' ? siteBaseUrl : '';
+  const _meta = (typeof pageMeta !== 'undefined' && pageMeta) ? pageMeta : {};
+  const _title = _meta.title || (typeof title !== 'undefined' ? title : _site.siteName);
+  const _description = _meta.description || ('Custom luxury suits from ' + _site.siteName + ', cut and finished by hand.');
+  const _url = _base + (typeof currentPath !== 'undefined' ? currentPath : '');
+%>
+<meta name="description" content="<%= _description %>">
+<% if (_base) { %><link rel="canonical" href="<%= _url %>"><% } %>
+<meta property="og:type" content="website">
+<meta property="og:title" content="<%= _title %>">
+<meta property="og:description" content="<%= _description %>">
+<% if (_base) { %><meta property="og:url" content="<%= _url %>"><% } %>
+<meta property="og:site_name" content="<%= _site.siteName %>">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<%= _title %>">
+<meta name="twitter:description" content="<%= _description %>">

@@ -1,0 +1,22 @@
+<div class="admin-header">
+  <div>
+    <h1>Pages</h1>
+    <p style="color:var(--color-ink-soft);">Edit the headline, intro copy, and SEO details for each public page.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <table class="simple">
+    <thead><tr><th>Page</th><th>Heading</th><th>SEO Title</th><th></th></tr></thead>
+    <tbody>
+      <% rows.forEach(function(row) { %>
+        <tr>
+          <td><%= row.label %></td>
+          <td><%= (row.page && row.page.content.heading) || '—' %></td>
+          <td><%= (row.page && row.page.content.seoTitle) || '—' %></td>
+          <td><a class="btn btn-sm btn-outline" href="/admin/pages/<%= row.slug %>/edit">Edit</a></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>

@@ -1,8 +1,8 @@
 <section class="page-header">
   <div class="container">
-    <span class="eyebrow">By Appointment Only</span>
-    <h1>Bespoke Tailoring</h1>
-    <p>A suit built entirely from scratch, around you — cut by hand, fitted in person, and finished in our studio. This is the full Lugo Tailoring experience, from first consultation to final stitch.</p>
+    <span class="eyebrow"><%= (content && content.eyebrow) || 'By Appointment Only' %></span>
+    <h1><%= (content && content.heading) || 'Bespoke Tailoring' %></h1>
+    <p><%= (content && content.intro) || 'A suit built entirely from scratch, around you — cut by hand, fitted in person, and finished in our studio. This is the full Lugo Tailoring experience, from first consultation to final stitch.' %></p>
     <div class="hero-actions" style="justify-content:center; margin-top:24px;">
       <a class="btn btn-primary" href="/booking">Book a Consultation</a>
       <a class="btn btn-outline" href="/store">Prefer to design online? Try Made-to-Measure</a>

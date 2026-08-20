@@ -1,0 +1,65 @@
+<div class="admin-header">
+  <div>
+    <h1><%= label %> Page</h1>
+  </div>
+  <a class="btn btn-outline" href="/admin/pages">Back to Pages</a>
+</div>
+
+<% if (saved) { %>
+  <div class="alert alert-success">Saved.</div>
+<% } %>
+<% if (error) { %>
+  <div class="alert alert-error"><%= error %></div>
+<% } %>
+
+<% if (slug === 'home') { %>
+  <div class="panel">
+    <h3 style="margin-bottom:6px;">Hero Video</h3>
+    <p style="color:var(--color-ink-soft); font-size:0.88rem; margin-bottom:20px;">
+      Replaces the illustrated hero background with a looping video. MP4 or WebM, up to 50MB —
+      keep it short (10&ndash;20 seconds) and without sound, since it autoplays muted. If no video is uploaded,
+      the homepage falls back to the default image.
+    </p>
+
+    <% if (content.heroVideoUrl) { %>
+      <video src="<%= content.heroVideoUrl %>" style="width:100%; max-width:480px; border-radius:6px; margin-bottom:16px; display:block;" muted loop autoplay playsinline></video>
+      <form method="POST" action="/admin/pages/home/hero-video/remove" style="margin-bottom:24px;">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button class="btn btn-sm btn-danger" type="submit">Remove Video (use default image)</button>
+      </form>
+    <% } else { %>
+      <p style="margin-bottom:16px; color:var(--color-ink-soft);">No hero video uploaded — the homepage is currently using the default image.</p>
+    <% } %>
+
+    <form method="POST" action="/admin/pages/home/hero-video" enctype="multipart/form-data">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <label for="video">Upload <%= content.heroVideoUrl ? 'Replacement' : '' %> Video</label>
+        <input type="file" id="video" name="video" accept="video/mp4,video/webm" required>
+      </div>
+      <button class="btn btn-primary" type="submit">Upload</button>
+    </form>
+  </div>
+<% } %>
+
+<div class="panel" style="max-width:640px;">
+  <h3 style="margin-bottom:16px;">Page Copy</h3>
+  <form method="POST" action="/admin/pages/<%= slug %>/edit">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="field"><label for="eyebrow">Eyebrow (small label above the heading)</label><input type="text" id="eyebrow" name="eyebrow" value="<%= content.eyebrow || '' %>"></div>
+    <div class="field"><label for="heading">Heading</label><input type="text" id="heading" name="heading" value="<%= content.heading || '' %>"></div>
+    <div class="field"><label for="intro">Intro Text</label><textarea id="intro" name="intro"><%= content.intro || '' %></textarea></div>
+
+    <h3 style="margin:24px 0 16px;">SEO</h3>
+    <div class="field">
+      <label for="seoTitle">SEO Title</label>
+      <input type="text" id="seoTitle" name="seoTitle" value="<%= content.seoTitle || '' %>">
+    </div>
+    <div class="field">
+      <label for="seoDescription">SEO Description</label>
+      <textarea id="seoDescription" name="seoDescription"><%= content.seoDescription || '' %></textarea>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Save Changes</button>
+  </form>
+</div>

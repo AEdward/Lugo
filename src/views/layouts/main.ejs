@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= typeof title !== 'undefined' ? title : 'Lugo Tailoring' %></title>
-  <meta name="description" content="Lugo Tailoring — bespoke luxury suits, custom fabric &amp; design orders, and personal fitting appointments.">
+  <title><%= typeof title !== 'undefined' ? title : ((typeof siteSettings !== 'undefined' && siteSettings) ? siteSettings.siteName : 'Lugo Tailoring') %></title>
+  <%- include('../partials/seo') %>
   <link rel="icon" href="/images/logo.png" type="image/png">
   <link rel="stylesheet" href="/css/styles.css">
   <%- include('../partials/analytics') %>

@@ -1,8 +1,8 @@
 <section class="page-header">
   <div class="container">
-    <span class="eyebrow">Get in Touch</span>
-    <h1>Contact Us</h1>
-    <p>Questions about a custom order or your appointment? Send us a message and we'll respond within one business day.</p>
+    <span class="eyebrow"><%= (content && content.eyebrow) || 'Get in Touch' %></span>
+    <h1><%= (content && content.heading) || 'Contact Us' %></h1>
+    <p><%= (content && content.intro) || "Questions about a custom order or your appointment? Send us a message and we'll respond within one business day." %></p>
   </div>
 </section>
 
@@ -45,8 +45,9 @@
       <p style="color:var(--color-ink-soft);">Tuesday – Saturday, 10:00 AM – 6:00 PM<br>Closed Sunday &amp; Monday</p>
       <h3>Reach Us Directly</h3>
       <p style="color:var(--color-ink-soft);">
-        <a href="mailto:hello@lugotailoring.com">hello@lugotailoring.com</a><br>
-        <a href="tel:+251000000000">+251 00 000 0000</a>
+        <% if (siteSettings.contactEmail) { %><a href="mailto:<%= siteSettings.contactEmail %>"><%= siteSettings.contactEmail %></a><br><% } %>
+        <% if (siteSettings.contactPhone) { %><a href="tel:<%= siteSettings.contactPhone.replace(/\s+/g, '') %>"><%= siteSettings.contactPhone %></a><% } %>
+        <% if (siteSettings.contactAddress) { %><br><%= siteSettings.contactAddress %><% } %>
       </p>
       <h3>Prefer to book directly?</h3>
       <a class="btn btn-outline" href="/booking">Book an Appointment</a>

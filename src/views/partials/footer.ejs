@@ -3,12 +3,19 @@
     <div class="footer-grid">
       <div>
         <div class="footer-brand">
-          <img src="/images/logo.png" alt="Lugo Tailoring">
-          Lugo Tailoring
+          <img src="/images/logo.png" alt="<%= siteSettings.siteName %>">
+          <%= siteSettings.siteName %>
         </div>
         <p style="max-width: 320px; color: #a99f96; font-size: 0.9rem;">
           Custom luxury suits, cut and finished by hand. Book a fitting or design your suit online.
         </p>
+        <% if (siteSettings.socialFacebook || siteSettings.socialInstagram || siteSettings.socialTiktok) { %>
+          <p style="margin-top:14px;">
+            <% if (siteSettings.socialFacebook) { %><a href="<%= siteSettings.socialFacebook %>" target="_blank" rel="noopener" style="display:inline;margin-right:12px;">Facebook</a><% } %>
+            <% if (siteSettings.socialInstagram) { %><a href="<%= siteSettings.socialInstagram %>" target="_blank" rel="noopener" style="display:inline;margin-right:12px;">Instagram</a><% } %>
+            <% if (siteSettings.socialTiktok) { %><a href="<%= siteSettings.socialTiktok %>" target="_blank" rel="noopener" style="display:inline;">TikTok</a><% } %>
+          </p>
+        <% } %>
       </div>
       <div>
         <h4>Explore</h4>
@@ -21,8 +28,9 @@
       <div>
         <h4>Contact</h4>
         <a href="/contact">Contact Us</a>
-        <a href="mailto:hello@lugotailoring.com">hello@lugotailoring.com</a>
-        <a href="tel:+251000000000">+251 00 000 0000</a>
+        <% if (siteSettings.contactEmail) { %><a href="mailto:<%= siteSettings.contactEmail %>"><%= siteSettings.contactEmail %></a><% } %>
+        <% if (siteSettings.contactPhone) { %><a href="tel:<%= siteSettings.contactPhone.replace(/\s+/g, '') %>"><%= siteSettings.contactPhone %></a><% } %>
+        <% if (siteSettings.contactAddress) { %><span style="display:block;color:#cfc6be;font-size:0.9rem;"><%= siteSettings.contactAddress %></span><% } %>
       </div>
       <div>
         <h4>Legal</h4>
@@ -32,7 +40,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span>&copy; <%= new Date().getFullYear() %> Lugo Tailoring. All rights reserved.</span>
+      <span>&copy; <%= new Date().getFullYear() %> <%= siteSettings.siteName %>. All rights reserved.</span>
       <span>
         <% if (typeof currentCustomer !== 'undefined' && currentCustomer) { %>
           <a href="/account" style="color:#8f867e;">My Account</a>
