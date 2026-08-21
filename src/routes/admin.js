@@ -890,7 +890,7 @@ const PAGE_LABELS = {
   home: 'Home',
   about: 'About',
   bespoke: 'Bespoke',
-  gallery: 'Gallery',
+  gallery: 'Collections',
   contact: 'Contact',
   terms: 'Terms of Service',
   privacy: 'Privacy Policy',

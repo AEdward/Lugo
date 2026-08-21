@@ -12,7 +12,7 @@ describe('public pages', () => {
     ['/', 'Lugo Tailoring'],
     ['/about', 'Tailoring'],
     ['/bespoke', 'Bespoke'],
-    ['/gallery', 'Gallery'],
+    ['/gallery', 'Collections'],
     ['/contact', 'Contact'],
     ['/booking', 'Appointment'],
     ['/store', 'Store'],

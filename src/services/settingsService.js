@@ -9,6 +9,12 @@ const SITE_SETTING_DEFAULTS = {
   socialFacebook: '',
   socialInstagram: '',
   socialTiktok: '',
+  // Digits only (with country code, no + or spaces) — used to build a
+  // wa.me deep link. Blank hides the WhatsApp option in the contact menu.
+  whatsappNumber: '',
+  // Handle only, no @ — used to build a t.me deep link. Blank hides the
+  // Telegram option in the contact menu.
+  telegramUsername: '',
   // Shown to customers who choose "Bank Transfer" at checkout.
   bankTransferDetails: '',
   // Shown to customers who choose "Cash" at checkout.

@@ -45,10 +45,10 @@ module.exports = {
       {
         slug: 'gallery',
         content: {
-          seoTitle: 'Gallery — Lugo Tailoring',
+          seoTitle: 'Collections — Lugo Tailoring',
           seoDescription: 'A selection of recent commissions from the Lugo Tailoring studio.',
           eyebrow: 'Portfolio',
-          heading: 'Gallery',
+          heading: 'Collections',
           intro: 'A selection of recent commissions from the Lugo Tailoring studio.',
         },
       },

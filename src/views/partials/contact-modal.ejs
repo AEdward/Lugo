@@ -1,0 +1,33 @@
+<div class="modal-overlay" id="contactModal">
+  <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="contactModalTitle">
+    <button type="button" class="modal-close" data-close-contact-modal aria-label="Close">&times;</button>
+    <h3 id="contactModalTitle">Send Us a Message</h3>
+    <p style="color:var(--color-ink-soft); font-size:0.88rem; margin-bottom:16px;">We'll respond within one business day.</p>
+
+    <div class="alert alert-success" id="contactModalSuccess" style="display:none;">Thanks for reaching out — we'll be in touch shortly.</div>
+    <div class="alert alert-error" id="contactModalError" style="display:none;"></div>
+
+    <form id="contactModalForm" method="POST" action="/contact">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+      <div class="form-grid">
+        <div class="field">
+          <label for="contactModalName">Full Name</label>
+          <input type="text" id="contactModalName" name="name" required>
+        </div>
+        <div class="field">
+          <label for="contactModalEmail">Email</label>
+          <input type="email" id="contactModalEmail" name="email" required>
+        </div>
+      </div>
+      <div class="field">
+        <label for="contactModalPhone">Phone (optional)</label>
+        <input type="tel" id="contactModalPhone" name="phone">
+      </div>
+      <div class="field">
+        <label for="contactModalMessage">Message</label>
+        <textarea id="contactModalMessage" name="message" required></textarea>
+      </div>
+      <button class="btn btn-primary btn-block" type="submit">Send Message</button>
+    </form>
+  </div>
+</div>

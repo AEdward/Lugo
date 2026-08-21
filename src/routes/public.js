@@ -107,8 +107,8 @@ router.get('/gallery', async (req, res, next) => {
     ]);
     const content = page ? page.content : {};
     res.render('gallery', {
-      title: content.seoTitle || 'Gallery — Lugo Tailoring',
-      pageMeta: buildPageMeta(content, 'Gallery — Lugo Tailoring'),
+      title: content.seoTitle || 'Collections — Lugo Tailoring',
+      pageMeta: buildPageMeta(content, 'Collections — Lugo Tailoring'),
       images,
       content,
     });
@@ -144,8 +144,15 @@ router.post(
     body('message').trim().isLength({ min: 5 }).withMessage('Please enter a message.'),
   ],
   async (req, res, next) => {
+    // The header's contact modal (available on every page, not just /contact)
+    // submits here via fetch rather than a full page navigation, so it can
+    // show success/errors inline without leaving the page it was opened from.
+    const wantsJson = req.get('Accept') === 'application/json';
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      if (wantsJson) return res.status(400).json({ ok: false, errors: errors.array() });
+
       const page = await Page.findOne({ where: { slug: 'contact' } });
       const content = page ? page.content : {};
       return res.status(400).render('contact', {
@@ -170,6 +177,8 @@ router.post(
           link: '/admin/messages',
         })
         .catch(() => {});
+
+      if (wantsJson) return res.json({ ok: true });
       res.redirect('/contact?sent=1');
     } catch (err) {
       next(err);
