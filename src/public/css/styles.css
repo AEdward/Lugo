@@ -109,11 +109,6 @@ img { max-width: 100%; display: block; }
 .btn-danger { background: var(--color-danger); color: var(--color-white); }
 .btn-block { width: 100%; }
 
-.btn-whatsapp { background: #25d366; color: white; }
-.btn-whatsapp:hover { background: #1eb857; color: white; }
-.btn-telegram { background: #229ed9; color: white; }
-.btn-telegram:hover { background: #1c87ba; color: white; }
-
 button.link-btn {
   background: none;
   border: none;
@@ -786,6 +781,50 @@ table.simple th { color: var(--color-ink-soft); font-weight: 600; font-size: 0.7
     bottom: 16px;
     text-align: center;
   }
+}
+
+/* ---------- Floating contact buttons (WhatsApp / Telegram / Contact) ---------- */
+
+.floating-contact-buttons {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 65;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.floating-contact-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(30, 27, 26, 0.25);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.floating-contact-btn:hover { transform: scale(1.06); color: white; }
+.floating-contact-whatsapp { background: #25d366; }
+.floating-contact-whatsapp:hover { background: #1eb857; }
+.floating-contact-telegram { background: #229ed9; }
+.floating-contact-telegram:hover { background: #1c87ba; }
+.floating-contact-contact { background: var(--color-accent); }
+.floating-contact-contact:hover { background: var(--color-accent-dark); }
+
+/* Reserves room above the floating stack — sized for the worst case
+   (all three buttons present) so it never overlaps regardless of how
+   many are actually configured. */
+.sticky-book-cta { bottom: 200px; }
+
+@media (max-width: 620px) {
+  .floating-contact-buttons { right: 14px; bottom: 14px; gap: 10px; }
+  .floating-contact-btn { width: 44px; height: 44px; }
+  .sticky-book-cta { bottom: 170px; }
 }
 
 /* ---------- Contact modal ---------- */
