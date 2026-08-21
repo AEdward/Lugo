@@ -327,6 +327,14 @@ button.link-btn {
   flex-wrap: wrap;
   gap: 8px;
 }
+.footer-credit {
+  margin-top: 10px;
+  font-size: 0.78rem;
+  color: #8f867e;
+  text-align: center;
+}
+.footer-credit a { color: #a99f96; }
+.footer-credit a:hover { color: white; }
 @media (max-width: 700px) { .footer-grid { grid-template-columns: 1fr; } }
 
 /* ---------- Hero ---------- */
