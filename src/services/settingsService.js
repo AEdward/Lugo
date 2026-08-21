@@ -6,6 +6,8 @@ const SITE_SETTING_DEFAULTS = {
   contactEmail: 'hello@lugotailoring.com',
   contactPhone: '+251 00 000 0000',
   contactAddress: '',
+  // Shown in the footer's Studio column, e.g. "Mon – Sat: 9:00 AM – 7:00 PM".
+  businessHours: '',
   socialFacebook: '',
   socialInstagram: '',
   socialTiktok: '',

@@ -895,8 +895,10 @@ const PAGE_LABELS = {
   terms: 'Terms of Service',
   privacy: 'Privacy Policy',
   'refund-policy': 'Refund & Return Policy',
+  faq: 'FAQ',
+  'shipping-delivery': 'Shipping & Delivery',
 };
-const LEGAL_PAGE_SLUGS = new Set(['terms', 'privacy', 'refund-policy']);
+const LEGAL_PAGE_SLUGS = new Set(['terms', 'privacy', 'refund-policy', 'faq', 'shipping-delivery']);
 const PAGE_SLUGS = Object.keys(PAGE_LABELS);
 // Only pages whose templates actually render content.blocks (see the
 // partials/blocks includes in home.ejs / about.ejs / bespoke.ejs) get the

@@ -79,7 +79,13 @@
     <section class="section<%= d.sectionStyle === 'alt' ? ' section-alt' : '' %>">
       <div class="container grid grid-2" style="align-items:center;">
         <% if (d.imagePosition !== 'right') { %>
-          <img src="<%= d.src %>" alt="<%= d.alt || '' %>" style="border-radius:6px;">
+          <% if (d.images && d.images.length > 1) { %>
+            <div class="image-collage">
+              <% d.images.forEach(function(src) { %><img src="<%= src %>" alt="<%= d.alt || '' %>"><% }); %>
+            </div>
+          <% } else { %>
+            <img src="<%= d.src %>" alt="<%= d.alt || '' %>" style="border-radius:6px;">
+          <% } %>
         <% } %>
         <div>
           <% if (d.eyebrow) { %><span class="eyebrow"><%= d.eyebrow %></span><% } %>
@@ -92,26 +98,154 @@
           <% } %>
         </div>
         <% if (d.imagePosition === 'right') { %>
-          <img src="<%= d.src %>" alt="<%= d.alt || '' %>" style="border-radius:6px;">
+          <% if (d.images && d.images.length > 1) { %>
+            <div class="image-collage">
+              <% d.images.forEach(function(src) { %><img src="<%= src %>" alt="<%= d.alt || '' %>"><% }); %>
+            </div>
+          <% } else { %>
+            <img src="<%= d.src %>" alt="<%= d.alt || '' %>" style="border-radius:6px;">
+          <% } %>
         <% } %>
       </div>
     </section>
 
   <% } else if (block.type === 'cta') { %>
-    <section class="section<%= d.sectionStyle === 'alt' ? ' section-alt' : '' %>">
+    <section
+      class="section cta-section<%= d.sectionStyle === 'alt' ? ' section-alt' : '' %><%= d.backgroundImage ? ' cta-section-image' : '' %>"
+      <% if (d.backgroundImage) { %>style="background-image:linear-gradient(rgba(20,17,16,0.55),rgba(20,17,16,0.55)),url('<%= d.backgroundImage %>');"<% } %>
+    >
       <div class="container" style="text-align:center;">
-        <% if (d.eyebrow) { %><span class="eyebrow"><%= d.eyebrow %></span><% } %>
-        <h2><%= d.heading %></h2>
+        <% if (d.eyebrow) { %><span class="eyebrow"<% if (d.backgroundImage) { %> style="color:#e0b9b0;"<% } %>><%= d.eyebrow %></span><% } %>
+        <h2<% if (d.backgroundImage) { %> style="color:white;"<% } %>><%= d.heading %></h2>
         <% if (d.text) { %>
-          <p style="max-width:<%= d.maxWidth || 480 %>px;margin:0 auto <%= d.textMargin || ((d.buttons && d.buttons.length > 1) ? 28 : 24) %>px;color:var(--color-ink-soft);"><%- d.text %></p>
+          <p style="max-width:<%= d.maxWidth || 480 %>px;margin:0 auto <%= d.textMargin || ((d.buttons && d.buttons.length > 1) ? 28 : 24) %>px;color:<%= d.backgroundImage ? 'rgba(255,255,255,0.85)' : 'var(--color-ink-soft)' %>;"><%- d.text %></p>
         <% } %>
         <% if (d.buttons && d.buttons.length > 1) { %>
           <div class="hero-actions" style="justify-content:center;">
-            <% d.buttons.forEach(function(b) { %><a class="btn btn-<%= b.style || 'primary' %>" href="<%= b.href %>"><%= b.label %></a><% }); %>
+            <% d.buttons.forEach(function(b) { %><a class="btn btn-<%= b.style || 'primary' %>"<% if (d.backgroundImage && b.style === 'outline') { %> style="border-color:white;color:white;"<% } %> href="<%= b.href %>"><%= b.label %></a><% }); %>
           </div>
         <% } else if (d.buttons && d.buttons.length === 1) { %>
-          <a class="btn btn-<%= d.buttons[0].style || 'primary' %>" href="<%= d.buttons[0].href %>"><%= d.buttons[0].label %></a>
+          <a class="btn btn-<%= d.buttons[0].style || 'primary' %>"<% if (d.backgroundImage && d.buttons[0].style === 'outline') { %> style="border-color:white;color:white;"<% } %> href="<%= d.buttons[0].href %>"><%= d.buttons[0].label %></a>
         <% } %>
+      </div>
+    </section>
+
+  <% } else if (block.type === 'heading-features') { %>
+    <section class="section">
+      <div class="container heading-features">
+        <div class="heading-features-intro">
+          <% if (d.eyebrow) { %><span class="eyebrow"><%= d.eyebrow %></span><% } %>
+          <% if (d.heading) { %><h2><%= d.heading %></h2><% } %>
+          <% if (d.text) { %><p style="color:var(--color-ink-soft);"><%- d.text %></p><% } %>
+        </div>
+        <div class="heading-features-items">
+          <% (d.items || []).forEach(function(item) { %>
+            <div class="feature">
+              <div class="feature-icon"><%- item.icon || '' %></div>
+              <% if (item.number) { %><span class="feature-number"><%= item.number %></span><% } %>
+              <h3><%= item.title %></h3>
+              <p><%- item.text %></p>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+    </section>
+
+  <% } else if (block.type === 'banner') { %>
+    <section class="section" style="padding-bottom:0;">
+      <div class="container">
+        <div class="grid grid-<%= (d.items || []).length === 1 ? 1 : 2 %>">
+          <% (d.items || []).forEach(function(item) { %>
+            <div class="banner-card" style="background-image:linear-gradient(<%= item.textPosition === 'left' ? 'to right' : 'to left' %>, rgba(20,17,16,0.82) 38%, rgba(20,17,16,0.05)),url('<%= item.src %>');<%= item.textPosition === 'left' ? 'justify-content:flex-start;' : 'justify-content:flex-end;' %>">
+              <div class="banner-card-text">
+                <% if (item.eyebrow) { %><span class="eyebrow" style="color:#e0b9b0;"><%= item.eyebrow %></span><% } %>
+                <h3><%= item.heading %></h3>
+                <p><%- item.text %></p>
+                <% if (item.buttonLabel && item.buttonHref) { %><a class="btn btn-outline" style="border-color:white;color:white;" href="<%= item.buttonHref %>"><%= item.buttonLabel %></a><% } %>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+    </section>
+
+  <% } else if (block.type === 'collection-grid') { %>
+    <section class="section">
+      <div class="container">
+        <% if (d.eyebrow || d.heading) { %>
+          <div class="section-header center">
+            <% if (d.eyebrow) { %><span class="eyebrow"><%= d.eyebrow %></span><% } %>
+            <% if (d.heading) { %><h2><%= d.heading %></h2><% } %>
+          </div>
+        <% } %>
+        <div class="collection-grid">
+          <% (d.items || []).forEach(function(item) { %>
+            <a class="collection-card" href="<%= item.href || '/store' %>">
+              <img src="<%= item.src %>" alt="<%= item.title %>">
+              <h3><%= item.title %></h3>
+              <p><%- item.text %></p>
+              <span class="collection-card-link">View Collection &rarr;</span>
+            </a>
+          <% }); %>
+        </div>
+      </div>
+    </section>
+
+  <% } else if (block.type === 'process-timeline') { %>
+    <section class="section process-timeline">
+      <div class="container">
+        <div class="section-header center">
+          <% if (d.eyebrow) { %><span class="eyebrow" style="color:#e0b9b0;"><%= d.eyebrow %></span><% } %>
+          <% if (d.heading) { %><h2 style="color:white;"><%= d.heading %></h2><% } %>
+        </div>
+        <div class="process-steps">
+          <% (d.steps || []).forEach(function(step, i) { %>
+            <div class="process-step">
+              <div class="process-step-icon"><%- step.icon || '' %></div>
+              <span class="process-step-label"><%= String(i + 1).padStart(2, '0') %> &mdash; <%= step.label %></span>
+              <p><%- step.text %></p>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+    </section>
+
+  <% } else if (block.type === 'detail-grid') { %>
+    <section class="section">
+      <div class="container">
+        <div class="section-header center">
+          <% if (d.eyebrow) { %><span class="eyebrow"><%= d.eyebrow %></span><% } %>
+          <% if (d.heading) { %><h2><%= d.heading %></h2><% } %>
+        </div>
+        <div class="detail-grid">
+          <% (d.items || []).forEach(function(item) { %>
+            <div class="detail-card">
+              <img src="<%= item.src %>" alt="<%= item.label %>">
+              <span class="detail-label"><%= item.label %></span>
+              <% if (item.caption) { %><span class="detail-caption"><%- item.caption %></span><% } %>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+    </section>
+
+  <% } else if (block.type === 'testimonials') { %>
+    <section class="section">
+      <div class="container">
+        <div class="section-header center">
+          <% if (d.eyebrow) { %><span class="eyebrow"><%= d.eyebrow %></span><% } %>
+          <% if (d.heading) { %><h2><%= d.heading %></h2><% } %>
+        </div>
+        <div class="grid grid-3">
+          <% (d.items || []).forEach(function(item) { %>
+            <div class="testimonial-card">
+              <div class="testimonial-quote-mark">&ldquo;</div>
+              <p class="testimonial-quote"><%- item.quote %></p>
+              <span class="testimonial-name">&mdash; <%= item.name %></span>
+              <% if (item.role) { %><span class="testimonial-role"><%= item.role %></span><% } %>
+            </div>
+          <% }); %>
+        </div>
       </div>
     </section>
   <% } %>

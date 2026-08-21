@@ -14,8 +14,7 @@ const LEGAL_LAST_UPDATED = 'August 20, 2026';
 
 router.get('/', async (req, res, next) => {
   try {
-    const [featured, homePage, legacyHeroVideoUrl] = await Promise.all([
-      GalleryImage.findAll({ order: [['sortOrder', 'ASC']], limit: 6 }),
+    const [homePage, legacyHeroVideoUrl] = await Promise.all([
       Page.findOne({ where: { slug: 'home' } }),
       settingsService.get('heroVideoUrl'),
     ]);
@@ -27,7 +26,6 @@ router.get('/', async (req, res, next) => {
     res.render('home', {
       title: content.seoTitle || 'Lugo Tailoring — Bespoke Luxury Suits',
       pageMeta: buildPageMeta(content, 'Lugo Tailoring — Bespoke Luxury Suits'),
-      featured,
       heroVideoUrl,
       content,
     });
@@ -94,6 +92,22 @@ router.get('/privacy', async (req, res, next) => {
 router.get('/refund-policy', async (req, res, next) => {
   try {
     await renderLegalPage(res, 'legal/refund-policy', 'refund-policy', 'Refund & Return Policy — Lugo Tailoring');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/faq', async (req, res, next) => {
+  try {
+    await renderLegalPage(res, 'legal/faq', 'faq', 'FAQ — Lugo Tailoring');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/shipping-delivery', async (req, res, next) => {
+  try {
+    await renderLegalPage(res, 'legal/shipping-delivery', 'shipping-delivery', 'Shipping & Delivery — Lugo Tailoring');
   } catch (err) {
     next(err);
   }
@@ -214,7 +228,7 @@ router.get('/newsletter/unsubscribe/:token', async (req, res, next) => {
   }
 });
 
-const STATIC_SITEMAP_PATHS = ['/', '/about', '/bespoke', '/store', '/gallery', '/booking', '/contact', '/terms', '/privacy', '/refund-policy'];
+const STATIC_SITEMAP_PATHS = ['/', '/about', '/bespoke', '/store', '/gallery', '/booking', '/contact', '/terms', '/privacy', '/refund-policy', '/faq', '/shipping-delivery'];
 
 router.get('/robots.txt', (req, res) => {
   res.type('text/plain').send(

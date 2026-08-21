@@ -1,0 +1,36 @@
+<section class="page-header">
+  <div class="container">
+    <span class="eyebrow"><%= (content && content.eyebrow) || 'Help' %></span>
+    <h1><%= (content && content.heading) || 'Frequently Asked Questions' %></h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="legal-content">
+      <p class="legal-updated">Last updated: <%= lastUpdated %></p>
+
+      <% if (content && content.body) { %>
+        <%- content.body %>
+      <% } else { %>
+      <h2>How does made-to-measure ordering work?</h2>
+      <p>Browse our fabrics in the store, choose your lapel, fit, lining, and other details, then submit your own measurements at checkout. Your garment is cut and produced specifically for you.</p>
+
+      <h2>How is bespoke different from made-to-measure?</h2>
+      <p>Bespoke is built entirely from scratch by a single tailor across multiple in-person fittings — the full Lugo Tailoring experience. Made-to-measure is configured online and doesn't require a studio visit to get started. See our <a href="/bespoke">Bespoke</a> page for details.</p>
+
+      <h2>How long does an order take?</h2>
+      <p>Turnaround depends on the garment and current workload — we'll confirm an estimated timeline once your order or fitting is booked.</p>
+
+      <h2>What payment methods do you accept?</h2>
+      <p>We accept secure online payment through Chapa, bank transfer (with receipt upload), and cash in person.</p>
+
+      <h2>Can I change my measurements after ordering?</h2>
+      <p>Contact us as soon as possible — see our <a href="/refund-policy">Refund &amp; Return Policy</a> for how this affects your order.</p>
+
+      <h2>Still have a question?</h2>
+      <p><a href="/contact">Contact us</a> and we'll get back to you within one business day.</p>
+      <% } %>
+    </div>
+  </div>
+</section>

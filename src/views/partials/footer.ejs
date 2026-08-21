@@ -1,71 +1,83 @@
 <footer class="site-footer">
   <div class="container">
-    <div class="footer-grid">
+    <div class="footer-grid footer-grid-5">
       <div>
         <div class="footer-brand">
           <img src="/images/logo.png" alt="<%= siteSettings.siteName %>">
           <%= siteSettings.siteName %>
         </div>
-        <p style="max-width: 320px; color: #a99f96; font-size: 0.9rem;">
-          Custom luxury suits, cut and finished by hand. Book a fitting or design your suit online.
+        <p style="max-width: 280px; color: #a99f96; font-size: 0.9rem;">
+          Bespoke and made-to-measure tailoring, crafted with precision, passion and purpose.
         </p>
         <% if (siteSettings.socialFacebook || siteSettings.socialInstagram || siteSettings.socialTiktok) { %>
-          <p style="margin-top:14px;">
-            <% if (siteSettings.socialFacebook) { %><a href="<%= siteSettings.socialFacebook %>" target="_blank" rel="noopener" style="display:inline;margin-right:12px;">Facebook</a><% } %>
-            <% if (siteSettings.socialInstagram) { %><a href="<%= siteSettings.socialInstagram %>" target="_blank" rel="noopener" style="display:inline;margin-right:12px;">Instagram</a><% } %>
-            <% if (siteSettings.socialTiktok) { %><a href="<%= siteSettings.socialTiktok %>" target="_blank" rel="noopener" style="display:inline;">TikTok</a><% } %>
-          </p>
+          <div class="footer-socials">
+            <% if (siteSettings.socialFacebook) { %>
+              <a href="<%= siteSettings.socialFacebook %>" target="_blank" rel="noopener" aria-label="Facebook">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M14 13.5h2.5l1-4H14v-2c0-1.03 0-2 2-2h1.5V2.14C17.17 2.09 15.89 2 14.53 2 11.7 2 9.75 3.66 9.75 6.7V9.5H6.5v4h3.25V22h4.25V13.5Z"/></svg>
+              </a>
+            <% } %>
+            <% if (siteSettings.socialInstagram) { %>
+              <a href="<%= siteSettings.socialInstagram %>" target="_blank" rel="noopener" aria-label="Instagram">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>
+              </a>
+            <% } %>
+            <% if (siteSettings.socialTiktok) { %>
+              <a href="<%= siteSettings.socialTiktok %>" target="_blank" rel="noopener" aria-label="TikTok">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M16.5 3c.4 2.2 1.9 3.8 4.1 4v3c-1.5 0-2.9-.4-4.1-1.2v6.2c0 3.4-2.7 6-6 6s-6-2.6-6-6c0-3.3 2.6-5.9 5.9-6v3.1c-1.6.1-2.9 1.4-2.9 2.9 0 1.6 1.3 2.9 2.9 2.9s3-1.3 3-2.9V3h3.1Z"/></svg>
+              </a>
+            <% } %>
+          </div>
         <% } %>
       </div>
       <div>
         <h4>Explore</h4>
         <a href="/bespoke">Bespoke</a>
         <a href="/store">Made-to-Measure</a>
-        <a href="/about">About</a>
         <a href="/gallery">Collections</a>
+        <a href="/about">About</a>
         <a href="/booking">Book an Appointment</a>
       </div>
       <div>
-        <h4>Contact</h4>
+        <h4>Help</h4>
+        <a href="/faq">FAQ</a>
+        <a href="/bespoke">Fittings &amp; Process</a>
+        <a href="/shipping-delivery">Shipping &amp; Delivery</a>
+        <a href="/refund-policy">Returns</a>
         <a href="/contact">Contact Us</a>
-        <% if (siteSettings.contactEmail) { %><a href="mailto:<%= siteSettings.contactEmail %>"><%= siteSettings.contactEmail %></a><% } %>
-        <% if (siteSettings.contactPhone) { %><a href="tel:<%= siteSettings.contactPhone.replace(/\s+/g, '') %>"><%= siteSettings.contactPhone %></a><% } %>
-        <% if (siteSettings.contactAddress) { %><span style="display:block;color:#cfc6be;font-size:0.9rem;"><%= siteSettings.contactAddress %></span><% } %>
       </div>
       <div>
-        <h4>Legal</h4>
-        <a href="/terms">Terms of Service</a>
-        <a href="/privacy">Privacy Policy</a>
-        <a href="/refund-policy">Refund &amp; Return Policy</a>
+        <h4>Studio</h4>
+        <% if (siteSettings.contactAddress) { %><span style="display:block;color:#cfc6be;font-size:0.9rem;margin-bottom:6px;"><%= siteSettings.contactAddress %></span><% } %>
+        <% if (siteSettings.contactPhone) { %><a href="tel:<%= siteSettings.contactPhone.replace(/\s+/g, '') %>"><%= siteSettings.contactPhone %></a><% } %>
+        <% if (siteSettings.contactEmail) { %><a href="mailto:<%= siteSettings.contactEmail %>"><%= siteSettings.contactEmail %></a><% } %>
+        <% if (siteSettings.businessHours) { %><span style="display:block;color:#cfc6be;font-size:0.9rem;margin-top:6px;"><%= siteSettings.businessHours %></span><% } %>
+      </div>
+      <div>
+        <h4>Newsletter</h4>
+        <% if (newsletterStatus === 'subscribed') { %>
+          <p class="footer-newsletter-message">Thanks — you're subscribed to our newsletter.</p>
+        <% } else { %>
+          <p>Stay updated on new fabrics, collections and exclusive offers.</p>
+          <% if (newsletterStatus === 'error') { %>
+            <p class="footer-newsletter-message footer-newsletter-error">Please enter a valid email address.</p>
+          <% } %>
+          <form method="POST" action="/newsletter/subscribe" class="footer-newsletter-form footer-newsletter-form-stacked">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+            <input type="hidden" name="returnTo" value="<%= currentPath %>">
+            <input type="email" name="email" placeholder="Your email" required>
+            <button class="btn btn-accent btn-sm" type="submit" aria-label="Subscribe">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </form>
+        <% } %>
       </div>
     </div>
-    <div class="footer-newsletter">
-      <% if (newsletterStatus === 'subscribed') { %>
-        <p class="footer-newsletter-message">Thanks — you're subscribed to our newsletter.</p>
-      <% } else { %>
-        <h4>Join Our Newsletter</h4>
-        <p>New fabrics, seasonal offers, and studio news — no spam, unsubscribe anytime.</p>
-        <% if (newsletterStatus === 'error') { %>
-          <p class="footer-newsletter-message footer-newsletter-error">Please enter a valid email address.</p>
-        <% } %>
-        <form method="POST" action="/newsletter/subscribe" class="footer-newsletter-form">
-          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
-          <input type="hidden" name="returnTo" value="<%= currentPath %>">
-          <input type="email" name="email" placeholder="you@example.com" required>
-          <button class="btn btn-accent btn-sm" type="submit">Subscribe</button>
-        </form>
-      <% } %>
-    </div>
     <div class="footer-bottom">
-      <span>&copy; <%= new Date().getFullYear() %> <%= siteSettings.siteName %>. All rights reserved.</span>
+      <span>&copy; <%= new Date().getFullYear() %> <%= siteSettings.siteName %>. All Rights Reserved.</span>
       <span>
-        <% if (typeof currentCustomer !== 'undefined' && currentCustomer) { %>
-          <a href="/account" style="color:#8f867e;">My Account</a>
-        <% } else { %>
-          <a href="/account/login" style="color:#8f867e;">My Account</a>
-        <% } %>
+        <a href="/privacy" style="color:#8f867e;">Privacy Policy</a>
         &nbsp;&middot;&nbsp;
-        <a href="/admin/login" style="color:#8f867e;">Admin</a>
+        <a href="/terms" style="color:#8f867e;">Terms &amp; Conditions</a>
       </span>
     </div>
     <div class="footer-credit">

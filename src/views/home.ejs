@@ -15,34 +15,4 @@
   </div>
 </section>
 
-<%
-  // Body content between the hero and the (database-driven) Recent Work
-  // gallery below is editable via Pages > Home in the admin — see
-  // partials/blocks.ejs for the block-type renderers. The gallery section
-  // stays hardcoded here (not a block) since its content comes from the
-  // GalleryImage model, not admin-authored text.
-  var homeBlocks = (content && content.blocks) || [];
-%>
-<%- include('partials/blocks', { blocks: homeBlocks.slice(0, 3) }) %>
-
-<section class="section section-alt">
-  <div class="container">
-    <div class="section-header center">
-      <span class="eyebrow">From the Atelier</span>
-      <h2>Recent Work</h2>
-    </div>
-    <div class="gallery-grid">
-      <% (featured || []).forEach(function(img) { %>
-        <div class="gallery-item">
-          <img src="<%= img.imageUrl %>" alt="<%= img.title || 'Lugo Tailoring' %>">
-          <div class="gallery-caption"><%= img.title %></div>
-        </div>
-      <% }) %>
-    </div>
-    <div style="text-align:center; margin-top:36px;">
-      <a class="btn btn-outline" href="/gallery">View Full Collections</a>
-    </div>
-  </div>
-</section>
-
-<%- include('partials/blocks', { blocks: homeBlocks.slice(3) }) %>
+<%- include('partials/blocks', { blocks: (content && content.blocks) || [] }) %>

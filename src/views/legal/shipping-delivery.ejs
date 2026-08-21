@@ -1,0 +1,30 @@
+<section class="page-header">
+  <div class="container">
+    <span class="eyebrow"><%= (content && content.eyebrow) || 'Help' %></span>
+    <h1><%= (content && content.heading) || 'Shipping & Delivery' %></h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="legal-content">
+      <p class="legal-updated">Last updated: <%= lastUpdated %></p>
+
+      <% if (content && content.body) { %>
+        <%- content.body %>
+      <% } else { %>
+      <h2>Studio Pickup &amp; Fittings</h2>
+      <p>Most Lugo garments are collected in person at the studio, as part of your final fitting appointment — see <a href="/booking">Book an Appointment</a> to schedule one.</p>
+
+      <h2>Delivery</h2>
+      <p>If you're not able to visit the studio, let us know at checkout or by <a href="/contact">contacting us</a> and we'll arrange delivery within Addis Ababa.</p>
+
+      <h2>Timelines</h2>
+      <p>Because every garment is cut and finished specifically for you, production timelines vary by order — we'll confirm an estimated completion date once your order or fitting is booked.</p>
+
+      <h2>Questions</h2>
+      <p>Reach out any time — see our <a href="/faq">FAQ</a> or <a href="/contact">contact us</a> directly.</p>
+      <% } %>
+    </div>
+  </div>
+</section>
